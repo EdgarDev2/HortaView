@@ -1,60 +1,89 @@
 <p align="center">
-    <a href="https://github.com/yiisoft" target="_blank">
-        <img src="https://avatars0.githubusercontent.com/u/993323" height="100px">
+    <a target="_blank">
+        <img src="https://cdn.pixabay.com/photo/2017/01/16/23/31/icon-1985550_640.png" height="210px" width="210">
     </a>
-    <h1 align="center">Yii 2 Advanced Project Template</h1>
+    <h1 align="center">Monitoreo Web en Tiempo Real de Hortalizas</h1>
     <br>
 </p>
 
-Yii 2 Advanced Project Template is a skeleton [Yii 2](https://www.yiiframework.com/) application best for
-developing complex Web applications with multiple tiers.
+## Descripción del Proyecto
 
-The template includes three tiers: front end, back end, and console, each of which
-is a separate Yii application.
+El proyecto "Monitoreo Web en Tiempo Real de Hortalizas" tiene como objetivo monitorear las variables ambientales cruciales para el cultivo de hortalizas para proporcionar al cliente datos en tiempo real, gráficos predictivos, gráficos de comparación y más.
+Este sistema permitirá optimizar la producción agrícola y controlar la distribución del agua en función a la humedad del suelo.
 
-The template is designed to work in a team development environment. It supports
-deploying the application in different environments.
+## Institución
 
-Documentation is at [docs/guide/README.md](docs/guide/README.md).
+**Escuela**: Instituto Tecnológico Superior de Valladolid  
+**Ciudad**: Valladolid, Yucatán.
 
-[![Latest Stable Version](https://img.shields.io/packagist/v/yiisoft/yii2-app-advanced.svg)](https://packagist.org/packages/yiisoft/yii2-app-advanced)
-[![Total Downloads](https://img.shields.io/packagist/dt/yiisoft/yii2-app-advanced.svg)](https://packagist.org/packages/yiisoft/yii2-app-advanced)
-[![build](https://github.com/yiisoft/yii2-app-advanced/workflows/build/badge.svg)](https://github.com/yiisoft/yii2-app-advanced/actions?query=workflow%3Abuild)
+## Asesor del Proyecto
 
-DIRECTORY STRUCTURE
--------------------
+**Asesor interno**: Dr. Jesús Antonio Santos Tejero.  
+**Asesor Externo**: Dr. Rusell Renan Iuit
+Manzanero.
 
-```
-common
-    config/              contains shared configurations
-    mail/                contains view files for e-mails
-    models/              contains model classes used in both backend and frontend
-    tests/               contains tests for common classes    
-console
-    config/              contains console configurations
-    controllers/         contains console controllers (commands)
-    migrations/          contains database migrations
-    models/              contains console-specific model classes
-    runtime/             contains files generated during runtime
-backend
-    assets/              contains application assets such as JavaScript and CSS
-    config/              contains backend configurations
-    controllers/         contains Web controller classes
-    models/              contains backend-specific model classes
-    runtime/             contains files generated during runtime
-    tests/               contains tests for backend application    
-    views/               contains view files for the Web application
-    web/                 contains the entry script and Web resources
-frontend
-    assets/              contains application assets such as JavaScript and CSS
-    config/              contains frontend configurations
-    controllers/         contains Web controller classes
-    models/              contains frontend-specific model classes
-    runtime/             contains files generated during runtime
-    tests/               contains tests for frontend application
-    views/               contains view files for the Web application
-    web/                 contains the entry script and Web resources
-    widgets/             contains frontend widgets
-vendor/                  contains dependent 3rd-party packages
-environments/            contains environment-based overrides
-```
+## Estudiantes Participantes
+
+- Ing. Edgar Poot Ku.
+
+## Tecnologías Utilizadas
+
+- **Lenguajes de programación**: PHP, JS
+- **Frameworks**: YII2
+- **Base de datos**: MySQL
+
+## Requisitos
+
+- Tener Instalado [WampServer](https://wampserver.aviatechno.net/).
+- Tener instalado [Composer](https://getcomposer.org/download/).
+- Tener Instalado [Git](https://git-scm.com/downloads/win).
+
+## Instrucciones de instalación
+
+1. Iniciar el entorno de desarrollo web WampServer desde la cmd
+   ```bash
+    start C:\wamp64\wampmanager.exe
+   ```
+2. Clonar el repositorio en "C:\wamp64\www":
+   ```bash
+   git clone https://github.com/EdgarDev2/HortaView.git
+   ```
+3. Cambiar de directorio al proyecto e inicializarlo seleccionando 0
+   ```bash
+   cd HortaView && php init
+   ```
+4. Instalar las dependencias
+   ```sql
+   composer install
+   ```
+5. Configurar el nombre de la BD a "sistemariego" en common/main-local.php en la linea:
+   ```bash
+   'dsn' => 'mysql:host=localhost;dbname=sistemariego',
+   ```
+6. Configurar el charset agregando utf8 en la linea:
+   ```sql
+   'charset' => 'utf8',
+   ```
+7. Crear la base de datos con MySQL console de WampServer
+   ```sql
+   CREATE DATABASE sistemariego CHARACTER SET utf8mb4 COLLATE utf8_unicode_ci;
+   ```
+8. Selecciona la base de datos
+   ```sql
+   USE sistemariego;
+   ```
+9. Importar el script SQL a la base de datos
+   ```sql
+   SOURCE C:/wamp64/www/HortaView/databaseScript.sql;
+   ```
+10. salir de la BD y listo
+    ```sql
+    exit
+    ```
+
+## uso
+
+1. Acceder a la aplicación en el navegador
+   ```
+   http://localhost/HortaView/frontend/web/
+   ```
