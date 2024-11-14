@@ -1,0 +1,56 @@
+/* Estilo para el contenedor del calendario */
+body .custom-datepicker .ui-datepicker {
+    background-color: #f7f7f7 !important;
+    /*border: 1px solid #cccccc !important;*/
+    border-radius: 20px !important;
+}
+
+/* Aplica estilos a la cabecera del DatePicker */
+body .custom-datepicker .ui-datepicker-header {
+    background-color: white !important;
+    border: none !important;
+    font-weight: bold !important;
+    border-radius: 8px 8px 0 0 !important;
+}
+
+/* Estilo del select en la cabecera del DatePicker */
+body .custom-datepicker .ui-datepicker-header select {
+    background: transparent !important; 
+    color: #333;               /* Color del texto */
+    font-weight: bold;         
+    border: 1px solid #ddd;   
+    border-radius: 4px;      
+    padding: 2px 2px;          
+    width: 100px;
+    -webkit-appearance: none;  /* Estilo consistente en diferentes navegadores */
+    -moz-appearance: none;     /* Estilo consistente en Firefox */
+    appearance: none;          /* Estilo consistente en navegadores modernos */
+    outline: none;             /* Desactiva el contorno por defecto */
+    text-align: center;
+}
+
+/* Estilo para los días */
+body .custom-datepicker .ui-datepicker-calendar .ui-state-default {
+    background: transparent !important; 
+    border: none !important;
+    padding: 7px !important;
+    text-align: center !important;
+}
+
+/* Estilo para el día actual */
+body .custom-datepicker .ui-datepicker-calendar .ui-datepicker-today .ui-state-default {
+    background-color: #20B2AA !important; /* Fondo verde */
+    border-radius: 350px;                /* Bordes redondeados */
+    color: white !important;             /* Texto blanco */
+    text-align: center !important;       /* Texto centrado */
+}
+
+
+/* Estilo para los días seleccionados */
+body .custom-datepicker .ui-datepicker-calendar .ui-state-active {
+    background-color: #3CB371 !important;
+    border-radius: 350px;
+    color: white !important; 
+    text-align: center !important;
+}
+

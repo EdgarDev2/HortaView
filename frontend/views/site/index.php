@@ -5,7 +5,7 @@
 use yii\helpers\Html;
 
 $this->title = 'Inicio';
-$this->registerCssFile('@web/css/custom_styles.css', ['depends' => [\yii\web\YiiAsset::class]]);
+
 ?>
 
 <div class="site-index">
