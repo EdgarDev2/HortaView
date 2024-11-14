@@ -60,7 +60,6 @@ AppAsset::register($this);
             echo Html::tag('div', Html::a('Login', ['/site/login'], ['class' => ['btn btn-link login text-decoration-none']]), ['class' => ['d-flex']]);
         } else {
             echo Html::tag('div', Html::a('Perfil', ['/perfil/view'], ['class' => ['btn btn-link login text-decoration-none']]), ['class' => ['d-flex']]);
-
             echo Html::beginForm(['/site/logout'], 'post', ['class' => 'd-flex'])
                 . Html::submitButton(
                     'Salir (' . Yii::$app->user->identity->username . ')',

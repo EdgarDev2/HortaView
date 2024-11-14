@@ -17,7 +17,7 @@ $this->title = "Perfil de " . $model->user->username;
 
 $this->params['breadcrumbs'][] = ['label' => 'Perfil', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
- 
+
 ?>
 <div class="perfil-view">
 
@@ -26,12 +26,15 @@ $this->params['breadcrumbs'][] = $this->title;
     <p>
         <?Php
 
-        
+
 
         if (PermisosHelpers::userDebeSerPropietario('perfil', $model->id)) {
 
-            echo Html::a('Update', ['update', 'id' => $model->id],
-                ['class' => 'btn btn-primary']);
+            echo Html::a(
+                'Update',
+                ['update', 'id' => $model->id],
+                ['class' => 'btn btn-primary']
+            );
         } ?>
 
         <?= Html::a('Delete', ['delete', 'id' => $model->id], [
