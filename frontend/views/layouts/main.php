@@ -32,34 +32,47 @@ AppAsset::register($this);
     <header>
         <?php
         NavBar::begin([
-            'brandLabel' => 'Sistema XXX',   //Yii::$app->name,
-            'brandUrl' => Yii::$app->homeUrl,
+            'brandLabel' => Html::img('@web/images/house-fill-light.svg', ['alt' => Yii::$app->name]) . ' ' . 'HortaView',
+            'brandUrl' => Yii::$app->user->isGuest ? Yii::$app->homeUrl : ['/variables-ambientales/index'], // URL diferente según el estado de autenticación
             'options' => [
-                'class' => 'navbar navbar-expand-md navbar-dark bg-dark fixed-top',
+                'class' => 'navbar navbar-expand-md navbar-dark bg-success fixed-top',
             ],
         ]);
+        // Array de elementos para nav.
+        $menuItems = [];
 
-        $menuItems = [
-            ['label' => 'Inicio', 'url' => ['/site/index']],
-            //['label' => 'Acerca de', 'url' => ['/site/about']],
-            //['label' => 'Contacto', 'url' => ['/site/contact']],
-        ];
+        // Verificar si el usuario es un invitado (no autenticado)
         if (Yii::$app->user->isGuest) {
-            //$menuItems[] = ['label' => 'Signup', 'url' => ['/site/signup']];
+            // Si es un invitado, solo mostrar estas opciones
+            $menuItems = [
+                ['label' => 'Acerca de', 'url' => ['/site/about']],
+                //['label' => 'Contacto', 'url' => ['/site/contact']],
+            ];
+        } else {
+            // Aquí iría el código para los usuarios autenticados
+            $menuItems = [
+                ['label' => 'Tiempo Real', 'url' => ['/tiempo-real/index']],
+                ['label' => 'Graficas', 'url' => ['/graficas/index']],
+                ['label' => 'Predicciones', 'url' => ['/predicciones/index']],
+                ['label' => 'Acerca de', 'url' => ['/site/about']],
+                //['label' => 'Contacto', 'url' => ['/site/contact']],
+            ];
         }
-
+        // Renderizar el menu
         echo Nav::widget([
             'options' => ['class' => 'navbar-nav me-auto mb-2 mb-md-0'],
             'items' => $menuItems,
         ]);
+        //bloque para iniciar sesión
         if (Yii::$app->user->isGuest) {
             //$menuItems[]  =  ['label'  =>  'Signup',  'url'  =>  ['/site/signup']];  //Se agrego
             //$menuItems[]  =  ['label'  =>  'Login',  'url'  =>  ['/site/login']];    //Se agrego
 
-            echo Html::tag('div', Html::a('Registrarse', ['/site/signup'], ['class' => ['btn btn-link login text-decoration-none']]), ['class' => ['d-flex']]);
-            echo Html::tag('div', Html::a('Login', ['/site/login'], ['class' => ['btn btn-link login text-decoration-none']]), ['class' => ['d-flex']]);
+            echo Html::tag('div', Html::a('Registrarse', ['/site/signup'], ['class' => ['btn btn-success border-0 text-decoration-none']]), ['class' => ['d-flex']]);
+            echo Html::tag('div', Html::a('Login', ['/site/login'], ['class' => ['btn btn-success border-0 text-decoration-none']]), ['class' => ['d-flex']]);
         } else {
-            echo Html::tag('div', Html::a('Perfil', ['/perfil/view'], ['class' => ['btn btn-link login text-decoration-none']]), ['class' => ['d-flex']]);
+            //echo Html::tag('div', Html::a('Perfil', ['/perfil/view'], ['class' => ['btn btn-link login text-decoration-none']]), ['class' => ['d-flex']]);
+
             echo Html::beginForm(['/site/logout'], 'post', ['class' => 'd-flex'])
                 . Html::submitButton(
                     'Salir (' . Yii::$app->user->identity->username . ')',
@@ -83,8 +96,8 @@ AppAsset::register($this);
 
     <footer class="footer mt-auto py-3 text-muted">
         <div class="container">
-            <p class="float-start">&copy; Ing. Edgar Manuel Poot Ku <?= date('Y') ?></p>
-            <p class="float-end"><?= Yii::powered() ?></p>
+            <p class="float-start">&copy; Edgar Manuel Poot Ku <?= date('Y') ?></p>
+            <p class="float-end">Instituto Tenológico Superior de Valladolid</p>
         </div>
     </footer>
 

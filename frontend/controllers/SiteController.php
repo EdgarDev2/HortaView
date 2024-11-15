@@ -88,14 +88,13 @@ class SiteController extends Controller
         if (!Yii::$app->user->isGuest) {
             return $this->goHome();
         }
-
         $model = new LoginForm();
+        // Cargar datos del formulario y realizar el inicio de sesión
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
+            // Redirigir a la página de Variables Ambientales después del inicio de sesión
+            return $this->redirect(['/variables-ambientales/index']);
         }
-
         $model->password = '';
-
         return $this->render('login', [
             'model' => $model,
         ]);

@@ -6,41 +6,83 @@ use yii\web\JsExpression;
 use yii\widgets\ActiveForm;
 ?>
 
-<div class="container">
-    <h2>Promedio de Humedad por Hora</h2>
-    <h4>Fecha: <?= Html::encode($fechaActual) ?></h4>
+<div class="">
+    <!-- <h2 class="display-6 text-success">Promedio de Humedad por Hora</h2> -->
+    <h5 class="text-success fw-normal">Fecha: <span class="text-secondary"><?= Html::encode($fechaActual) ?></span></h5>
+    <hr class="border border-success">
 
     <div class="row">
+        <!-- Renderiza el formulario de búsqueda y pasa los datos necesarios -->
+        <?= $this->render('_search', []) ?>
         <!-- Gráfico de Cama 1 -->
         <div class="col-md-6">
-            <h5>Cama 1</h5>
+            <h5 class="text-secondary">Cama 1</h5>
+            <div class="d-flex justify-content-between align-items-center">
+                <!-- Input con ícono de calendario para Cama 1 -->
+                <div class="input-group">
+                    <!-- Coloca el input en un contenedor con clase de Bootstrap para el tamaño -->
+                    <div class="col-sm-4">
+                        <input type="date" class="form-control placeholder-wave bg-light text-secondary" id="fechaCama1" name="fechaCama1" style="width: 140px; border: none;">
+                    </div>
+                </div>
+            </div>
             <canvas id="graficoCama1"></canvas>
         </div>
 
         <!-- Gráfico de Cama 2 -->
         <div class="col-md-6">
-            <h5>Cama 2</h5>
+            <h5 class="text-secondary">Cama 2</h5>
+            <div class="d-flex justify-content-between align-items-center">
+                <!-- Input con ícono de calendario para Cama 2 -->
+                <div class="input-group">
+                    <!-- Coloca el input en un contenedor con clase de Bootstrap para el tamaño -->
+                    <div class="col-sm-4">
+                        <input type="date" class="form-control placeholder-wave bg-light text-secondary" id="fechaCama2" name="fechaCama2" style="width: 140px; border: none;">
+                    </div>
+                </div>
+            </div>
             <canvas id="graficoCama2"></canvas>
         </div>
     </div>
+
     <div class="row">
         <!-- Gráfico de Cama 3 -->
         <div class="col-md-6">
-            <h5>Cama 3</h5>
+            <h5 class="text-secondary">Cama 3</h5>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="input-group">
+                    <!-- Coloca el input en un contenedor con clase de Bootstrap para el tamaño -->
+                    <div class="col-sm-4">
+                        <input type="date" class="form-control placeholder-wave bg-light text-secondary" id="fechaCama3" name="fechaCama3" style="width: 140px; border: none;">
+                    </div>
+                </div>
+            </div>
             <canvas id="graficoCama3"></canvas>
         </div>
 
         <!-- Gráfico de Cama 4 -->
         <div class="col-md-6">
-            <h5>Cama 4</h5>
+            <h5 class="text-secondary">Cama 4</h5>
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="input-group">
+                    <!-- Coloca el input en un contenedor con clase de Bootstrap para el tamaño -->
+                    <div class="col-sm-4">
+                        <input type="date" class="form-control placeholder-wave bg-light text-secondary" id="fechaCama4" name="fechaCama4" style="width: 140px; border: none;">
+                    </div>
+                </div>
+            </div>
             <canvas id="graficoCama4"></canvas>
         </div>
     </div>
 
+
+
     <?php
-    $this->registerJs("
+    $resultadosJson = json_encode($resultados); //Solución al problema json_encode() dentro del bloque <<<JS
+
+    $this->registerJs(<<<JS
         // Datos de las gráficas
-        const resultados = " . json_encode($resultados) . ";
+        const resultados = JSON.parse('$resultadosJson');
 
         // Función para crear un gráfico radar
         function crearGraficoRadar(canvasId, data) {
@@ -97,6 +139,6 @@ use yii\widgets\ActiveForm;
         crearGraficoRadar('graficoCama2', dataCama2);
         crearGraficoRadar('graficoCama3', dataCama3);
         crearGraficoRadar('graficoCama4', dataCama4);
-    ");
+    JS);
     ?>
 </div>
