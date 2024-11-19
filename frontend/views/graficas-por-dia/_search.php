@@ -72,6 +72,16 @@ $this->registerJs(<<<JS
         chart.data.datasets[2].data = minimos;   
         chart.update(); // Se actualiza la instancia existente.
     }
+
+    // Configurar la actualización automática cada 5 minutos (300000 ms)
+    setInterval(function() {
+        console.log('Actualización automática cada 5 minutos.');
+        cargarDatos('fechaCama1', fechaActual);
+        cargarDatos('fechaCama2', fechaActual);
+        cargarDatos('fechaCama3', fechaActual);
+        cargarDatos('fechaCama4', fechaActual);
+    }, 300000); // 5 minutos
+
     // Cargar automáticamente los datos de la fecha actual para cada cama al cargar la página.
     cargarDatos('fechaCama1', fechaActual);
     cargarDatos('fechaCama2', fechaActual);
