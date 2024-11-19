@@ -5,8 +5,8 @@
 
 use common\widgets\Alert;
 use frontend\assets\AppAsset;
-use yii\bootstrap5\Breadcrumbs;  //use  yii\widgets\Breadcrumbs;
-use yii\bootstrap5\Html;         //use  yii\helpers\Html;
+use yii\bootstrap5\Breadcrumbs;
+use yii\bootstrap5\Html;
 use yii\bootstrap5\Nav;
 use yii\bootstrap5\NavBar;
 
@@ -52,7 +52,7 @@ AppAsset::register($this);
             // Aquí iría el código para los usuarios autenticados
             $menuItems = [
                 ['label' => 'Tiempo Real', 'url' => ['/tiempo-real/index']],
-                ['label' => 'Graficas', 'url' => ['/graficas/index']],
+                ['label' => 'Graficas', 'url' => ['/graficas-por-dia/index']],
                 ['label' => 'Predicciones', 'url' => ['/predicciones/index']],
                 ['label' => 'Acerca de', 'url' => ['/site/about']],
                 //['label' => 'Contacto', 'url' => ['/site/contact']],
