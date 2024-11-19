@@ -1,6 +1,7 @@
 <?php
-
+$fechaActual = date('Y-m-d');
 $this->registerJs(<<<JS
+    const fechaActual = '{$fechaActual}';
     // Se envía una solicitud Ajax al backend. Específicamente a la acción 'actionAjax' del controlador 'GraficasController'.
     function cargarDatos(camaId, fechaSeleccionada) {
         console.log('Datos enviados:', { fecha: fechaSeleccionada, camaId: camaId });
@@ -71,4 +72,9 @@ $this->registerJs(<<<JS
         chart.data.datasets[2].data = minimos;   
         chart.update(); // Se actualiza la instancia existente.
     }
+    // Cargar automáticamente los datos de la fecha actual para cada cama al cargar la página.
+    cargarDatos('fechaCama1', fechaActual);
+    cargarDatos('fechaCama2', fechaActual);
+    cargarDatos('fechaCama3', fechaActual);
+    cargarDatos('fechaCama4', fechaActual);
 JS);
