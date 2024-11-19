@@ -17,6 +17,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/di
         'promedios' => $promedios,
         'maximos' => $maximos,
         'minimos' => $minimos,
+        'fechaActual' => $fechaActual,
     ]) ?>
     <div class="row">
         <?= $this->render('_search', []) ?>
