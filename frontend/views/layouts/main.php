@@ -9,8 +9,7 @@ use yii\bootstrap5\Breadcrumbs;
 use yii\bootstrap5\Html;
 use yii\bootstrap5\Nav;
 use yii\bootstrap5\NavBar;
-
-use frontend\assets\FontAwesomeAsset;
+use yii\helpers\Url;
 
 AppAsset::register($this);
 ?>
@@ -38,24 +37,20 @@ AppAsset::register($this);
                 'class' => 'navbar navbar-expand-md navbar-dark bg-success fixed-top',
             ],
         ]);
-        // Array de elementos para nav.
+
         $menuItems = [];
 
-        // Verificar si el usuario es un invitado (no autenticado)
         if (Yii::$app->user->isGuest) {
-            // Si es un invitado, solo mostrar estas opciones
             $menuItems = [
                 ['label' => 'Acerca de', 'url' => ['/site/about']],
-                //['label' => 'Contacto', 'url' => ['/site/contact']],
             ];
         } else {
-            // Aquí iría el código para los usuarios autenticados
+            // Usuarios autenticados
             $menuItems = [
                 ['label' => 'Tiempo Real', 'url' => ['/tiempo-real/index']],
                 ['label' => 'Graficas', 'url' => ['/graficas-por-dia/index']],
                 ['label' => 'Predicciones', 'url' => ['/predicciones/index']],
                 ['label' => 'Acerca de', 'url' => ['/site/about']],
-                //['label' => 'Contacto', 'url' => ['/site/contact']],
             ];
         }
         // Renderizar el menu
@@ -63,16 +58,22 @@ AppAsset::register($this);
             'options' => ['class' => 'navbar-nav me-auto mb-2 mb-md-0'],
             'items' => $menuItems,
         ]);
+        $currentUrl = Url::current();
+        $defaultColor = '#A8D5BA';
+        $activeColor = '#ffffff';
+        $this->registerCss("a.custom-link:hover {color: #C5E1D4 !important;}");
         //bloque para iniciar sesión
         if (Yii::$app->user->isGuest) {
-            //$menuItems[]  =  ['label'  =>  'Signup',  'url'  =>  ['/site/signup']];  //Se agrego
-            //$menuItems[]  =  ['label'  =>  'Login',  'url'  =>  ['/site/login']];    //Se agrego
-
-            echo Html::tag('div', Html::a('Registrarse', ['/site/signup'], ['class' => ['btn btn-success border-0 text-decoration-none']]), ['class' => ['d-flex']]);
-            echo Html::tag('div', Html::a('Login', ['/site/login'], ['class' => ['btn btn-success border-0 text-decoration-none']]), ['class' => ['d-flex']]);
+            $signupUrl = Url::to(['/site/signup']);
+            $isSignupActive = $currentUrl === $signupUrl;
+            echo Html::tag('div', Html::a('Registrarse', ['/site/signup'], ['class' => 'custom-link btn bg-transparent border-0 text-decoration-none', 'style' => 'color: ' . ($isSignupActive ? $activeColor : $defaultColor),]), ['class' => 'd-flex']);
+            $loginUrl = Url::to(['/site/login']);
+            $isLoginActive = $currentUrl === $loginUrl;
+            echo Html::tag('div', Html::a('Login', ['/site/login'], ['class' => 'custom-link btn bg-transparent border-0 text-decoration-none', 'style' => 'color: ' . ($isLoginActive ? $activeColor : $defaultColor),]), ['class' => 'd-flex']);
         } else {
-            //echo Html::tag('div', Html::a('Perfil', ['/perfil/view'], ['class' => ['btn btn-link login text-decoration-none']]), ['class' => ['d-flex']]);
-
+            $targetUrls = [Url::to(['/perfil/view']), Url::to(['/perfil/create']),];
+            $isActive = in_array($currentUrl, $targetUrls);
+            echo Html::tag('div', Html::a('Perfil', ['/perfil/view'], ['class' => 'custom-link btn bg-transparent border-0 text-decoration-none', 'style' => 'color: ' . ($isActive ? $activeColor : $defaultColor),]), ['class' => 'd-flex']);
             echo Html::beginForm(['/site/logout'], 'post', ['class' => 'd-flex'])
                 . Html::submitButton(
                     'Salir (' . Yii::$app->user->identity->username . ')',
