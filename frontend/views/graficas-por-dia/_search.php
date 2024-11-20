@@ -1,4 +1,5 @@
 <?php
+date_default_timezone_set('America/Mexico_City'); // Precisión de la hora y fecha por mediante región
 $fechaActual = date('Y-m-d');
 $this->registerJs(<<<JS
     const fechaActual = '{$fechaActual}';
