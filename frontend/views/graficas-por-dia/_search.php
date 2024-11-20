@@ -3,6 +3,7 @@ date_default_timezone_set('America/Mexico_City'); // Precisión de la hora y fec
 $fechaActual = date('Y-m-d');
 $this->registerJs(<<<JS
     const fechaActual = '{$fechaActual}';
+    let mensajeMostrado = false; // Variable global
     // Se envía una solicitud Ajax al backend. Específicamente a la acción 'actionAjax' del controlador 'GraficasController'.
     function cargarDatos(camaId, fechaSeleccionada) {
         console.log('Datos enviados:', { fecha: fechaSeleccionada, camaId: camaId });
@@ -16,6 +17,10 @@ $this->registerJs(<<<JS
             success: function(response) {
                 if (response.success) {
                     console.log();
+                    if (!mensajeMostrado) {
+                        console.log('****************************Actualización automática cada 5 minutos.****************************');
+                        mensajeMostrado = true; // Cambiar el estado de la bandera para que no se imprima más
+                    }
                     console.log('Response');
                     console.log('Promedios:', response.promedios);
                     console.log('Máximos:', response.maximos);
@@ -76,7 +81,7 @@ $this->registerJs(<<<JS
 
     // Configurar la actualización automática cada 5 minutos (300000 ms)
     setInterval(function() {
-        console.log('Actualización automática cada 5 minutos.');
+        mensajeMostrado = false; // Reiniciar la bandera cada 5 minutos
         cargarDatos('fechaCama1', fechaActual);
         cargarDatos('fechaCama2', fechaActual);
         cargarDatos('fechaCama3', fechaActual);
