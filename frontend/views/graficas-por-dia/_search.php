@@ -18,7 +18,7 @@ $this->registerJs(<<<JS
                 if (response.success) {
                     console.log();
                     if (!mensajeMostrado) {
-                        console.log('****************************Actualización automática cada 5 minutos.****************************');
+                        console.log('Actualización automática cada 5 minutos.');
                         mensajeMostrado = true; // Cambiar el estado de la bandera para que no se imprima más
                     }
                     console.log('Response');
@@ -73,13 +73,17 @@ $this->registerJs(<<<JS
         
         // Busca la instancia de la gráfica previamente inicializada con el ID.
         const chart = Chart.getChart(chartId); // Al encontrar la gráfica, devuelve su instancia para modificarla.
-        chart.data.datasets[0].data = promedios; // Modificación de los datos.
-        chart.data.datasets[1].data = maximos;   
-        chart.data.datasets[2].data = minimos;   
-        chart.update(); // Se actualiza la instancia existente.
+        if (chart) {
+            chart.data.datasets[0].data = promedios; // Modificación de los datos.
+            chart.data.datasets[1].data = maximos;   
+            chart.data.datasets[2].data = minimos;   
+            chart.update(); // Se actualiza la instancia existente.
+        } else {
+            console.warn('No se encontro la gráfica con ID: ', chartId);
+        }
     }
 
-    // Configurar la actualización automática cada 5 minutos (300000 ms)
+    // Actualización automática cada 5 minutos (300000 ms)
     setInterval(function() {
         mensajeMostrado = false; // Reiniciar la bandera cada 5 minutos
         cargarDatos('fechaCama1', fechaActual);
@@ -88,7 +92,7 @@ $this->registerJs(<<<JS
         cargarDatos('fechaCama4', fechaActual);
     }, 300000); // 5 minutos
 
-    // Cargar automáticamente los datos de la fecha actual para cada cama al cargar la página.
+    // Cargar automáticamente los datos de la fecha actual al ejecutar página.
     cargarDatos('fechaCama1', fechaActual);
     cargarDatos('fechaCama2', fechaActual);
     cargarDatos('fechaCama3', fechaActual);

@@ -4,7 +4,7 @@
 /** @var array $maximos */
 /** @var array $minimos */
 
-$this->render('_search', []);
+
 
 /**
  * Se soluciona el problema json_encode() que se origina dentro del bloque <<<JS o heredoc.
