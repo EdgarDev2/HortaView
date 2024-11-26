@@ -24,7 +24,6 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/di
         <?php for ($i = 1; $i <= 4; $i++): ?>
             <div class="col-md-6">
                 <h5 class="text-secondary">Humedad por día cama Ka'anche' <?= $i ?></h5>
-
                 <div class="btn-toolbar mb-3" role="toolbar" aria-label="Toolbar with button groups">
                     <div class="btn-group me-2" role="group" aria-label="First group">
                         <button class="btn btn-outline-success border-0" type="button" onclick="cambiarTipoGrafico('line', 'graficoCama<?= $i ?>')">
@@ -57,5 +56,31 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/di
             </div>
         <?php endfor; ?>
     </div>
-
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const now = new Date();
+        const currentDay = now.toDateString(); // Fecha en formato humano legible
+        const lastReloadDay = localStorage.getItem("lastReloadDay");
+
+        // Si es un nuevo día, recargamos la página
+        if (lastReloadDay !== currentDay) {
+            localStorage.setItem("lastReloadDay", currentDay);
+            location.reload();
+        } else {
+            console.log("La página ya se recargó hoy.");
+        }
+
+        // Calcular cuánto tiempo falta para el próximo día
+        const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0);
+        const timeUntilNextDay = nextMidnight - now;
+
+        console.log(`Tiempo restante hasta el próximo día: ${timeUntilNextDay} ms`);
+
+        // Programar la recarga al llegar a medianoche
+        setTimeout(() => {
+            localStorage.setItem("lastReloadDay", nextMidnight.toDateString());
+            location.reload();
+        }, timeUntilNextDay);
+    });
+</script>

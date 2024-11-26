@@ -1,12 +1,10 @@
 <?php
-date_default_timezone_set('America/Mexico_City'); // Precisión de la hora y fecha por mediante región
+date_default_timezone_set('America/Mexico_City');
 $fechaActual = date('Y-m-d');
 $this->registerJs(<<<JS
     const fechaActual = '{$fechaActual}';
-    let mensajeMostrado = false; // Variable global
     // Se envía una solicitud Ajax al backend. Específicamente a la acción 'actionAjax' del controlador 'GraficasController'.
     function cargarDatos(camaId, fechaSeleccionada) {
-        console.log('Datos enviados:', { fecha: fechaSeleccionada, camaId: camaId });
         $.ajax({
             url: 'index.php?r=graficas-por-dia/ajax',
             type: 'POST',
@@ -16,15 +14,6 @@ $this->registerJs(<<<JS
             },
             success: function(response) {
                 if (response.success) {
-                    console.log();
-                    if (!mensajeMostrado) {
-                        console.log('Actualización automática cada 5 minutos.');
-                        mensajeMostrado = true; // Cambiar el estado de la bandera para que no se imprima más
-                    }
-                    console.log('Response');
-                    console.log('Promedios:', response.promedios);
-                    console.log('Máximos:', response.maximos);
-                    console.log('Mínimos:', response.minimos);
                     actualizarGrafica(camaId, response.promedios, response.maximos, response.minimos);// Se procesa la respuesta.
                 } else {
                     console.error(response.message || 'Error al obtener los datos');
@@ -36,39 +25,21 @@ $this->registerJs(<<<JS
         });
     }
 
-    // Listener para los cambios en los inputs de fecha con jQuery y funciones anónimas.
-    $('#fechaCama1').on('change', function() {
-        cargarDatos('fechaCama1', $(this).val()); // Se llama a la función cargarDatos con dos argumentos camaId y fechaSeleccionada.
-    });
-
-    $('#fechaCama2').on('change', function() {
-        cargarDatos('fechaCama2', $(this).val());
-    });
-
-    $('#fechaCama3').on('change', function() {
-        cargarDatos('fechaCama3', $(this).val());
-    });
-
-    $('#fechaCama4').on('change', function() {
-        cargarDatos('fechaCama4', $(this).val());
+    // Listener genérico para cambios en los inputs de fecha
+    $('input[id^="fechaCama"]').on('change', function() {
+        const camaId = $(this).attr('id'); 
+        const fechaSeleccionada = $(this).val(); 
+        cargarDatos(camaId, fechaSeleccionada);
     });
 
     // Función para actualizar la gráfica específica con los nuevos datos.
     function actualizarGrafica(camaId, promedios, maximos, minimos) {
         let chartId = '';
         switch(camaId) {
-            case 'fechaCama1':
-                chartId = 'graficoCama1';
-                break;
-            case 'fechaCama2':
-                chartId = 'graficoCama2';
-                break;
-            case 'fechaCama3':
-                chartId = 'graficoCama3';
-                break;
-            case 'fechaCama4':
-                chartId = 'graficoCama4';
-                break;
+            case 'fechaCama1': chartId = 'graficoCama1'; break;
+            case 'fechaCama2': chartId = 'graficoCama2'; break;
+            case 'fechaCama3': chartId = 'graficoCama3'; break;
+            case 'fechaCama4': chartId = 'graficoCama4'; break;
         }
         
         // Busca la instancia de la gráfica previamente inicializada con el ID.
@@ -85,7 +56,6 @@ $this->registerJs(<<<JS
 
     // Actualización automática cada 5 minutos (300000 ms)
     setInterval(function() {
-        mensajeMostrado = false; // Reiniciar la bandera cada 5 minutos
         cargarDatos('fechaCama1', fechaActual);
         cargarDatos('fechaCama2', fechaActual);
         cargarDatos('fechaCama3', fechaActual);

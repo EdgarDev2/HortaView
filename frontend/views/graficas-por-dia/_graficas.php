@@ -83,7 +83,7 @@ $this->registerJs(<<<JS
                     },
                     responsive: true,
                     animation: {
-                        duration: 2500, // Duración de la transición en milisegundos
+                        duration: 1000, // Duración de la transición en milisegundos
                         easing: 'easeInOutElastic' // Efecto de la transición
                     }
                 }
