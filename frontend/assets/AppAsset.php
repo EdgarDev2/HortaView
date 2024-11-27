@@ -2,6 +2,7 @@
 
 namespace frontend\assets;
 
+use Yii;
 use yii\web\AssetBundle;
 
 /**
@@ -19,4 +20,17 @@ class AppAsset extends AssetBundle
         'yii\web\YiiAsset',
         'yii\bootstrap5\BootstrapAsset',
     ];
+    public function init()
+    {
+        parent::init();
+
+        // Escanear el directorio y agregar archivos JS
+        $jsDir = Yii::getAlias('@webroot/js/');
+        if (is_dir($jsDir)) {
+            $files = glob($jsDir . '/*.js'); // Obtiene todos los archivos .js
+            foreach ($files as $file) {
+                $this->js[] = 'js/' . basename($file);
+            }
+        }
+    }
 }
