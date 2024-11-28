@@ -45,27 +45,25 @@ class GraficasPorDiaController extends Controller
     {
         $data = $modelClass::find()
             ->select([
-                'HOUR(hora) as hora',
+                'HOUR(hora) as hora', // HOUR(hora) -> extrae la hora y alias "hora" se asigna a la expresión para referenciar el resultado de la consulta.
                 'AVG(humedad) as promedio_humedad',
                 'MAX(humedad) as max_humedad',
                 'MIN(humedad) as min_humedad',
             ])
             ->where(['fecha' => $fecha])
             ->groupBy(['HOUR(hora)'])
-            ->orderBy(['hora' => SORT_ASC])
+            ->orderBy(['hora' => SORT_ASC]) // hora es el alias que le dí a la columna HOUR(hora) dentro del select.
             ->asArray()
             ->all();
 
-        // Inicializa los arrays con valores `null` para 24 horas
         $resultados = [
             'promedios' => array_fill(0, 24, null),
             'maximos' => array_fill(0, 24, null),
             'minimos' => array_fill(0, 24, null),
         ];
 
-        // Llena los arrays con los datos de la consulta
         foreach ($data as $entry) {
-            $hora = (int)$entry['hora'];
+            $hora = (int)$entry['hora']; // hora es el alias dentro del select.
             $resultados['promedios'][$hora] = (float)$entry['promedio_humedad'];
             $resultados['maximos'][$hora] = (float)$entry['max_humedad'];
             $resultados['minimos'][$hora] = (float)$entry['min_humedad'];
@@ -76,31 +74,7 @@ class GraficasPorDiaController extends Controller
 
     public function actionIndex()
     {
-        try {
-            date_default_timezone_set('America/Mexico_City');
-            $fechaActual = date('Y-m-d');
-
-            //Yii::$app->view->registerJsFile('@web/js/main.js', ['depends' => [\yii\web\JqueryAsset::class]]);
-            $camas = [
-                'Cama1' => Cama1::class,
-                'Cama2' => Cama2::class,
-                'Cama3' => Cama3::class,
-                'Cama4' => Cama4::class,
-            ];
-
-            $resultados = [];
-            foreach ($camas as $key => $camaClass) {
-                $resultados[$key] = $this->obtenerDatosHumedad($camaClass, $fechaActual);
-            }
-
-            return $this->render('index', [
-                'resultados' => $resultados,
-                'fechaActual' => $fechaActual,
-            ]);
-        } catch (\Exception $e) {
-            Yii::$app->session->setFlash('error', 'Ocurrió un error: ' . $e->getMessage());
-            return $this->redirect(['site/error']);
-        }
+        return $this->render('index');
     }
 
     public function actionAjax()
@@ -131,7 +105,6 @@ class GraficasPorDiaController extends Controller
                 'minimos' => $resultados['minimos'],
             ];
         } catch (\Exception $e) {
-            Yii::error("Error al procesar la solicitud: " . $e->getMessage());
             return ['success' => false, 'message' => 'Error al procesar la solicitud'];
         }
     }

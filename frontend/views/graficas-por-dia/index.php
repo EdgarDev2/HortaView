@@ -6,38 +6,29 @@ use yii\helpers\Html;
 $this->registerCssFile('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js');
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js');
-
+date_default_timezone_set('America/Mexico_City');
+$fechaActual = date('Y-m-d');
 ?>
 
 <div class="graficas-index">
     <h1 class="display-6 text-success text-left">Filtrar datos de humedad del suelo</h1>
     <h5 class="text-success fw-normal text-end">Fecha actual: <span class="text-secondary"><?= Html::encode($fechaActual) ?></span></h5>
     <hr class="border border-success">
-    <?= $this->render('_graficas', [
-        'resultados' => $resultados,
-    ]) ?>
     <div class="row">
-        <?= $this->render('_search', []) ?>
         <?php for ($i = 1; $i <= 4; $i++): ?>
             <div class="col-md-6">
                 <h5 class="text-secondary">Humedad por día cama Ka'anche' <?= $i ?></h5>
                 <div class="btn-toolbar mb-3" role="toolbar" aria-label="Toolbar with button groups">
                     <div class="btn-group me-2" role="group" aria-label="First group">
-                        <div class="btn-group me-2" role="group" aria-label="First group">
-                            <button class="btn btn-outline-success border-0" type="button" onclick="window.cambiarTipoGrafico('line', 'graficoCama<?= $i ?>')">
-                                <i class="fas fa-chart-line"></i>
-                            </button>
-                            <button class="btn btn-outline-success border-0" type="button" onclick="window.cambiarTipoGrafico('bar', 'graficoCama<?= $i ?>')">
-                                <i class="fas fa-chart-bar"></i>
-                            </button>
-                            <button class="btn btn-outline-success border-0" type="button" onclick="window.cambiarTipoGrafico('radar', 'graficoCama<?= $i ?>')">
-                                <i class="fas fa-chart-pie"></i>
-                            </button>
-                            <button class="btn btn-outline-success border-0" type="button" onclick="window.cambiarTipoGrafico('radar', 'graficoCama<?= $i ?>')">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-                        </div>
-
+                        <button class="btn btn-outline-success border-0" type="button" onclick="window.cambiarTipoGrafico('line', 'graficoCama<?= $i ?>')">
+                            <i class="fas fa-chart-line"></i>
+                        </button>
+                        <button class="btn btn-outline-success border-0" type="button" onclick="window.cambiarTipoGrafico('bar', 'graficoCama<?= $i ?>')">
+                            <i class="fas fa-chart-bar"></i>
+                        </button>
+                        <button class="btn btn-outline-success border-0" type="button" onclick="window.cambiarTipoGrafico('radar', 'graficoCama<?= $i ?>')">
+                            <i class="fas fa-chart-pie"></i>
+                        </button>
                     </div>
                     <div class="input-group">
                         <input type="date"
@@ -45,7 +36,8 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/di
                             id="fechaCama<?= $i ?>"
                             name="fechaCama<?= $i ?>"
                             style="width: 140px; border: none;"
-                            title="Selecciona una fecha para filtrar los datos">
+                            title="Selecciona una fecha para filtrar los datos"
+                            onchange="actualizarGrafico(<?= $i ?>)">
                     </div>
                 </div>
                 <canvas id="graficoCama<?= $i ?>"></canvas>
@@ -53,126 +45,158 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/di
         <?php endfor; ?>
     </div>
 </div>
-
 <?php
-$promedios = json_encode($resultados);
-$maximos = json_encode($resultados);
-$minimos = json_encode($resultados);
-
-$this->registerJs(<<<JS
-    const prome = JSON.parse('{$promedios}');
-    const max = JSON.parse('{$maximos}');
-    const min = JSON.parse('{$minimos}');
-
-    const horas = Array.from({ length: 24 }, (_, i) => {
-        const hora = i < 10 ? '0' + i + ':00' : i + ':00'; // Formato HH:00
-        return hora;
-    });
-
-    const obtenerDatosCama = (cama) => ({
-        horas: horas,
-        humedades: horas.map(hora => prome[hora]?.['promedio_humedad_' + cama] ?? 0),
-        maxHumedades: horas.map(hora => max[hora]?.['max_humedad_' + cama] ?? 0),
-        minHumedades: horas.map(hora => min[hora]?.['min_humedad_' + cama] ?? 0)
-    });
-
-    // Almacenar los datos de las camas
-    const datosCamas = {
-        Cama1: obtenerDatosCama('Cama1'),
-        Cama2: obtenerDatosCama('Cama2'),
-        Cama3: obtenerDatosCama('Cama3'),
-        Cama4: obtenerDatosCama('Cama4')
-    };
-
-    // Almacenar las instancias de los gráficos
+$this->title = 'Gráficas';
+date_default_timezone_set('America/Mexico_City');
+$fechaActual = date('Y-m-d');
+?>
+<script>
+    const fechaActual = <?= json_encode($fechaActual) ?>;
+    console.log(fechaActual);
     const graficos = {};
 
-    function crearGrafico(canvasId, data, tipo = 'radar') {
-        // Eliminar completamente el gráfico existente
-        if (graficos[canvasId]) {
-            graficos[canvasId].destroy();
+    // Inicializar gráficos al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        for (let i = 1; i <= 4; i++) {
+            inicializarGrafico(`graficoCama${i}`, [], 'radar'); // Tipo por defecto: 'line'
+        }
+    });
+
+    // Función para inicializar un gráfico
+    function inicializarGrafico(id, data, tipo = 'radar') {
+        const ctx = document.getElementById(id).getContext('2d');
+
+        // Destruir el gráfico previo si ya existe
+        if (graficos[id]) {
+            graficos[id].chart.destroy();
         }
 
-        // Crear un nuevo gráfico
-        const ctx = document.getElementById(canvasId).getContext('2d');
-        graficos[canvasId] = new Chart(ctx, {
-            type: tipo,
-            data: {
-                labels: data.horas,
-                datasets: [
-                    {
-                        label: 'Promedio de Humedad',
-                        data: data.humedades,
-                        backgroundColor: 'rgba(25, 135, 84, 0.3)', 
-                        borderColor: 'rgba(25, 135, 84, 1)', 
-                        pointBackgroundColor: 'rgba(25, 135, 84, 1)', 
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Humedad Máxima',
-                        data: data.maxHumedades,
-                        backgroundColor: 'rgba(255, 99, 132, 0.3)', 
-                        borderColor: 'rgba(255, 99, 132, 1)', 
-                        pointBackgroundColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'Humedad Mínima',
-                        data: data.minHumedades,
-                        backgroundColor: 'rgba(54, 162, 235, 0.3)',
-                        borderColor: 'rgba(54, 162, 235, 1)', 
-                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }
-                ]
-            },
-            options: {
-                plugins: {
-                    zoom: {
+        // Guardar el tipo de gráfico
+        graficos[id] = {
+            tipo,
+            chart: new Chart(ctx, {
+                type: tipo,
+                data: {
+                    labels: Array.from({
+                        length: 24
+                    }, (_, i) => `${i}:00`), // Horas del día
+                    datasets: [{
+                            label: 'Promedio Humedad',
+                            data: data.promedios || [],
+                            borderColor: '#36A2EB',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        },
+                        {
+                            label: 'Máximo Humedad',
+                            data: data.maximos || [],
+                            borderColor: '#FF6384',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        },
+                        {
+                            label: 'Mínimo Humedad',
+                            data: data.minimos || [],
+                            borderColor: '#4BC0C0',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        },
+                    ],
+                },
+                options: {
+                    plugins: {
                         zoom: {
-                            wheel: {
-                                enabled: true,
-                                speed: 0.1
-                            },
-                            pinch: {
-                                enabled: true,
-                                threshold: 2
-                            },
-                            drag: {
-                                enabled: true
+                            zoom: {
+                                wheel: {
+                                    enabled: true,
+                                    speed: 0.1
+                                },
+                                pinch: {
+                                    enabled: true,
+                                    threshold: 2
+                                },
+                                drag: {
+                                    enabled: true
+                                }
                             }
                         }
-                    }
-                },
-                scales: {
-                    r: { 
-                        min: 0,
-                        max: 100,
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 10
+                    },
+                    scales: tipo === 'radar' ? {
+                        r: {
+                            min: 0,
+                            max: 100,
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 10
+                            }
                         }
+                    } : {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        },
+                        y: {
+                            min: 0,
+                            max: 100,
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 10
+                            }
+                        }
+                    },
+                    responsive: true,
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutElastic'
                     }
-                },
-                responsive: true,
-                animation: {
-                    duration: 1000,
-                    easing: 'easeInOutElastic'
                 }
-            }
-        });
+
+            }),
+        };
     }
 
-    // Exponer la función globalmente
-    window.cambiarTipoGrafico = function(tipo, canvasId) {
-        const cama = canvasId.replace('graficoCama', 'Cama'); // Obtener el nombre de la cama
-        const data = datosCamas[cama];
-        crearGrafico(canvasId, data, tipo); // Recrear el gráfico con el nuevo tipo
+    // Cambiar tipo de gráfico
+    window.cambiarTipoGrafico = function(tipo, id) {
+        const data = graficos[id].chart.data; // Mantener los datos
+        inicializarGrafico(id, {
+            promedios: data.datasets[0].data,
+            maximos: data.datasets[1].data,
+            minimos: data.datasets[2].data,
+        }, tipo);
     };
 
-    // Crear gráficos iniciales
-    crearGrafico('graficoCama1', datosCamas['Cama1'], 'radar');
-    crearGrafico('graficoCama2', datosCamas['Cama2'], 'radar');
-    crearGrafico('graficoCama3', datosCamas['Cama3'], 'radar');
-    crearGrafico('graficoCama4', datosCamas['Cama4'], 'radar');
-JS);
+    // Actualizar gráfico al filtrar por fecha
+    window.actualizarGrafico = function(camaId) {
+        const fechaInput = document.getElementById(`fechaCama${camaId}`);
+        const fecha = fechaInput.value;
+
+        if (!fecha) {
+            alert('Por favor selecciona una fecha válida.');
+            return;
+        }
+
+        // Enviar solicitud AJAX
+        $.ajax({
+            url: 'index.php?r=graficas-por-dia/ajax',
+            type: 'POST',
+            data: {
+                fecha: fecha,
+                camaId: `fechaCama${camaId}`
+            },
+            success: function(response) {
+                if (response.success) {
+                    const idGrafico = `graficoCama${camaId}`;
+                    inicializarGrafico(idGrafico, {
+                        promedios: response.promedios,
+                        maximos: response.maximos,
+                        minimos: response.minimos,
+                    }, graficos[idGrafico].tipo); // Usar el tipo actual del gráfico
+                } else {
+                    alert(response.message || 'Error al obtener los datos.');
+                }
+            },
+            error: function() {
+                alert('Error al conectar con el servidor.');
+            }
+        });
+    };
+</script>
