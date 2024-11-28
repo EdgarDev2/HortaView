@@ -62,7 +62,7 @@ $fechaActual = date('Y-m-d');
         }
     });
 
-    // Función para inicializar un gráfico
+
     function inicializarGrafico(id, data, tipo = 'radar') {
         const ctx = document.getElementById(id).getContext('2d');
 
@@ -164,14 +164,14 @@ $fechaActual = date('Y-m-d');
         }, tipo);
     };
 
-    // Actualizar gráfico al filtrar por fecha
+    // Actualizar gráfico al filtrar por fecha o usar la fecha actual
     window.actualizarGrafico = function(camaId) {
         const fechaInput = document.getElementById(`fechaCama${camaId}`);
-        const fecha = fechaInput.value;
+        let fecha = fechaInput.value;
 
+        // Usar la fecha actual si no se ha seleccionado ninguna
         if (!fecha) {
-            alert('Por favor selecciona una fecha válida.');
-            return;
+            fecha = fechaActual;
         }
 
         // Enviar solicitud AJAX
