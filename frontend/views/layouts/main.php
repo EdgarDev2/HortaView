@@ -48,7 +48,7 @@ AppAsset::register($this);
             // Usuarios autenticados
             $menuItems = [
                 ['label' => 'Tiempo Real', 'url' => ['/tiempo-real/index']],
-                ['label' => 'Graficas', 'url' => ['/graficas-por-dia/index']],
+                ['label' => 'Filtrar datos', 'url' => ['/graficas-por-dia/index']],
                 ['label' => 'Predicciones', 'url' => ['/predicciones/index']],
                 ['label' => 'Acerca de', 'url' => ['/site/about']],
             ];
