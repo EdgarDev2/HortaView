@@ -17,7 +17,7 @@ $fechaActual = date('Y-m-d');
     <div class="row mt-1">
         <?php for ($i = 1; $i <= 4; $i++): ?>
             <div class="col-md-6 mt-3"> <!-- Clase de margen inferior -->
-                <h5 class="text-secondary mb-3">Humedad por día cama Ka'anche' <?= $i ?></h5>
+                <h5 class="text-secondary mb-3">Humedad del suelo por día cama Ka'anche' <?= $i ?></h5>
                 <div class="btn-toolbar mb-3" role="toolbar" aria-label="Toolbar with button groups">
                     <div class="btn-group" role="group" aria-label="First group"> <!--me-2-->
                         <button class="btn btn-outline-success border-0" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line', 'graficoCama<?= $i ?>')">

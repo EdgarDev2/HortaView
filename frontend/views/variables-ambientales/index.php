@@ -1,5 +1,5 @@
 <?php
-$this->title = 'Variables ambientales';
+$this->title = 'Información sobre el cultivo';
 
 use yii\helpers\Html;
 ?>
