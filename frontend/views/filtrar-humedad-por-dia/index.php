@@ -1,5 +1,5 @@
 <?php
-$this->title = 'Gráficas';
+$this->title = 'Filtrar por día';
 
 use yii\helpers\Html;
 
@@ -10,7 +10,7 @@ date_default_timezone_set('America/Mexico_City');
 $fechaActual = date('Y-m-d');
 ?>
 
-<div class="graficas-index">
+<div class="filtrar-humedad-por-dia-index">
     <!--<h1 class="display-6 text-success text-left">Filtrar datos de humedad del suelo</h1>
     <h5 class="text-success fw-normal text-end">Fecha actual: <span class="text-secondary"><?= Html::encode($fechaActual) ?></span></h5>
     <hr class="border border-success">-->
@@ -189,7 +189,7 @@ $fechaActual = date('Y-m-d');
 
     function ajax(fecha, idcama) {
         $.ajax({
-            url: 'index.php?r=graficas-por-dia/ajax',
+            url: 'index.php?r=filtrar-humedad-por-dia/ajax',
             type: 'POST',
             data: {
                 fecha: fecha,

@@ -7,10 +7,10 @@ use yii\filters\VerbFilter;
 use yii\web\Controller;
 
 /**
- * frontend/views/tiempo-real/
+ * frontend/views/predicciones/
  * **/
 
-class TiempoRealController extends Controller
+class FiltrarHumedadPorRangoController extends Controller
 {
     public function behaviors()
     {

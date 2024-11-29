@@ -15,7 +15,7 @@ use yii\web\Controller;
  * frontend/views/graficas/
  * **/
 
-class GraficasPorDiaController extends Controller
+class FiltrarHumedadPorDiaController extends Controller
 {
     public function behaviors()
     {

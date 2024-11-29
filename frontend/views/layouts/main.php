@@ -50,20 +50,20 @@ AppAsset::register($this);
                 [
                     'label' => 'Tiempo real',
                     'items' => [ // Submenús
-                        ['label' => 'Humedad del suelo', 'url' => ['/tiempo-real/index']],
-                        ['label' => 'Temperatura ambiente', 'url' => ['/graficas-por-dia/sensor']],
-                        ['label' => 'Presión barométrica', 'url' => ['/graficas-por-dia/rango']],
+                        ['label' => 'Humedad del suelo', 'url' => ['/tiempo-real-humedad-suelo/index']],
+                        ['label' => 'Temperatura ambiente', 'url' => ['/tiempo-real-temperatura-ambiente/index']],
+                        ['label' => 'Presión barométrica', 'url' => ['/tiempo-real-barometrica/index']],
                     ],
                 ],
                 [
                     'label' => 'Filtrar datos humedad',
                     'items' => [ // Submenús
-                        ['label' => 'Humedad del suelo por día', 'url' => ['/graficas-por-dia/index']],
-                        ['label' => 'Humedad del suelo por rango', 'url' => ['/graficas-por-dia/sensor']],
-                        ['label' => 'Humedad del suelo por ciclo', 'url' => ['/graficas-por-dia/rango']],
+                        ['label' => 'Humedad del suelo por día', 'url' => ['/filtrar-humedad-por-dia/index']],
+                        ['label' => 'Humedad del suelo por rango', 'url' => ['/filtrar-humedad-por-rango/index']],
+                        ['label' => 'Humedad del suelo por ciclo', 'url' => ['/filtrar-humedad-por-ciclo/index']],
                     ],
                 ],
-                ['label' => 'Estadísticas generales', 'url' => ['/tiempo-real/indexk']],
+                ['label' => 'Estadísticas generales', 'url' => ['/estadisticas-generales/index']],
                 [
                     'label' => 'Predicciones',
                     'items' => [ // Submenús
