@@ -80,10 +80,11 @@ class FiltrarHumedadPorRangoController extends Controller
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
-        $fechaInicio = Yii::$app->request->post('fechaInicio');
-        $fechaFin = Yii::$app->request->post('fechaFin');
-        $camaId = Yii::$app->request->post('camaId');
+        $fechaInicio = Yii::$app->request->post('fechaInicio', date('Y-m-d')); // Fecha actual por defecto
+        $fechaFin = Yii::$app->request->post('fechaFin', date('Y-m-d'));       // Fecha actual por defecto
+        $camaId = Yii::$app->request->post('camaId', '1');                    // Cama 1 por defecto
 
+        // Determinar el modelo según el camaId
         $modelClass = match ($camaId) {
             '1' => Cama1::class,
             '2' => Cama2::class,
@@ -92,11 +93,16 @@ class FiltrarHumedadPorRangoController extends Controller
             default => null,
         };
 
+        // Validar parámetros
         if ($modelClass === null || !strtotime($fechaInicio) || !strtotime($fechaFin)) {
-            return ['success' => false, 'message' => 'Datos inválidos'];
+            return [
+                'success' => false,
+                'message' => 'Datos inválidos. Asegúrese de que todos los parámetros sean correctos.',
+            ];
         }
 
         try {
+            // Obtener los datos de humedad
             $resultados = $this->obtenerDatosHumedad($modelClass, $fechaInicio, $fechaFin);
             return [
                 'success' => true,
@@ -105,7 +111,10 @@ class FiltrarHumedadPorRangoController extends Controller
                 'minimos' => $resultados['minimos'],
             ];
         } catch (\Exception $e) {
-            return ['success' => false, 'message' => 'Error al procesar la solicitud'];
+            return [
+                'success' => false,
+                'message' => 'Error al procesar la solicitud: ' . $e->getMessage(),
+            ];
         }
     }
 }

@@ -14,13 +14,13 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/di
         <div class="col-md-12 d-flex flex-wrap align-items-center gap-2">
             <!-- Botones de tipo de gráfico -->
             <div class="btn-group" role="group" aria-label="Gráficos">
-                <button class="btn btn-outline-success btn-sm border-0 shadow-none" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line', 'graficoCama')">
+                <button class="btn btn-outline-success btn-sm border-0 shadow-none" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line')">
                     <i class="fas fa-chart-line"></i> Lineal
                 </button>
-                <button class="btn btn-outline-success btn-sm border-0 shadow-none" type="button" title="Gráfico de tipo Barra" onclick="cambiarTipoGrafico('bar', 'graficoCama')">
+                <button class="btn btn-outline-success btn-sm border-0 shadow-none" type="button" title="Gráfico de tipo Barra" onclick="cambiarTipoGrafico('bar')">
                     <i class="fas fa-chart-bar"></i> Barra
                 </button>
-                <button class="btn btn-outline-success btn-sm border-0 shadow-none" type="button" title="Gráfico de tipo Radar" onclick="cambiarTipoGrafico('radar', 'graficoCama')">
+                <button class="btn btn-outline-success btn-sm border-0 shadow-none" type="button" title="Gráfico de tipo Radar" onclick="cambiarTipoGrafico('radar')">
                     <i class="fas fa-chart-pie"></i> Radar
                 </button>
                 <button class="btn btn-outline-primary btn-sm border-0 shadow-none" type="button" title="Descargar gráfico como imagen" onclick="descargarImagen('graficoCama', 'grafico_cama.png')">
@@ -57,65 +57,119 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/di
 </div>
 
 <script>
-    // Este es el código JS que realiza la lógica de filtrado y muestra el gráfico
-    document.getElementById('btnFiltrar').addEventListener('click', function() {
-        let fechaInicio = document.getElementById('fechaInicio').value;
-        let fechaFin = document.getElementById('fechaFin').value;
-        let camaId = document.getElementById('camaId').value;
+    let chart; // Variable global para el gráfico
+    let tipoGrafico = 'line'; // Tipo de gráfico inicial
 
-        if (!fechaInicio || !fechaFin || !camaId) {
-            alert('Por favor, completa todos los filtros');
-            return;
+    // Función para inicializar el gráfico
+    function inicializarGrafico(data) {
+        const ctx = document.getElementById('graficoCama').getContext('2d');
+        if (chart) {
+            chart.destroy(); // Elimina el gráfico anterior si existe
         }
+        chart = new Chart(ctx, {
+            type: tipoGrafico,
+            data: {
+                labels: Array.from({
+                    length: 24
+                }, (_, i) => i + 'h'), // Horas
+                datasets: [{
+                        label: 'Promedio',
+                        data: data.promedios,
+                        borderColor: '#36A2EB',
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        fill: false,
+                    },
+                    {
+                        label: 'Máximo',
+                        data: data.maximos,
+                        borderColor: '#FF6384',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        fill: false,
+                    },
+                    {
+                        label: 'Mínimo',
+                        data: data.minimos,
+                        borderColor: '#4BC0C0',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        fill: false,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                    },
+                },
+            },
+        });
+    }
 
-        // Enviar los datos al controlador usando AJAX
+    // Función para realizar la solicitud AJAX
+    function cargarDatos(fechaInicio, fechaFin, camaId) {
         $.ajax({
             type: 'POST',
-            url: 'index.php?r=filtrar-humedad-por-rango/ajax', // Asegúrate de que la URL esté correcta
+            url: 'index.php?r=filtrar-humedad-por-rango/ajax',
             data: {
-                fechaInicio: fechaInicio,
-                fechaFin: fechaFin,
-                camaId: camaId
+                fechaInicio,
+                fechaFin,
+                camaId
             },
             success: function(response) {
                 if (response.success) {
-                    // Datos para la gráfica
-                    let datosGrafico = {
-                        labels: Array.from({
-                            length: 24
-                        }, (_, i) => i + "h"), // Horas del día
-                        datasets: [{
-                            label: 'Promedio de humedad',
-                            data: response.promedios, // Datos de los promedios
-                            borderColor: '#36A2EB', // Color de la línea
-                            fill: false
-                        }]
-                    };
-
-                    // Configuración de la gráfica
-                    let config = {
-                        type: 'radar', // Aquí se puede cambiar el tipo de gráfico
-                        data: datosGrafico,
-                        options: {
-                            responsive: true,
-                            scales: {
-                                y: {
-                                    beginAtZero: true
-                                }
-                            }
-                        }
-                    };
-
-                    // Dibujar la gráfica
-                    let ctx = document.getElementById('graficoCama').getContext('2d');
-                    if (window.chart) {
-                        window.chart.destroy(); // Elimina la gráfica anterior si existe
-                    }
-                    window.chart = new Chart(ctx, config);
+                    inicializarGrafico(response);
                 } else {
                     alert(response.message || 'Error al cargar los datos.');
                 }
-            }
+            },
         });
+    }
+
+    // Cambiar el tipo de gráfico
+    function cambiarTipoGrafico(nuevoTipo) {
+        tipoGrafico = nuevoTipo;
+        const fechaInicio = document.getElementById('fechaInicio').value || obtenerFechaActual();
+        const fechaFin = document.getElementById('fechaFin').value || obtenerFechaActual();
+        const camaId = document.getElementById('camaId').value;
+        cargarDatos(fechaInicio, fechaFin, camaId);
+    }
+
+    // Obtener fecha actual en formato YYYY-MM-DD
+    function obtenerFechaActual() {
+        const hoy = new Date();
+        const year = hoy.getFullYear();
+        const month = String(hoy.getMonth() + 1).padStart(2, '0');
+        const day = String(hoy.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
+    // Configurar el botón de filtrar
+    document.getElementById('btnFiltrar').addEventListener('click', function() {
+        const fechaInicio = document.getElementById('fechaInicio').value;
+        const fechaFin = document.getElementById('fechaFin').value;
+        const camaId = document.getElementById('camaId').value;
+
+        if (!fechaInicio || !fechaFin || !camaId) {
+            alert('Por favor, completa todos los filtros.');
+            return;
+        }
+        cargarDatos(fechaInicio, fechaFin, camaId);
     });
+
+    // Cargar datos iniciales al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        const fechaActual = obtenerFechaActual();
+        document.getElementById('fechaInicio').value = fechaActual;
+        document.getElementById('fechaFin').value = fechaActual;
+        cargarDatos(fechaActual, fechaActual, '1'); // Cargar datos de la cama 1 por defecto
+    });
+
+    // Función para descargar el gráfico
+    window.descargarImagen = function(canvasId, nombreArchivo) {
+        let link = document.createElement('a');
+        link.href = document.getElementById(canvasId).toDataURL();
+        link.download = nombreArchivo;
+        link.click();
+    };
 </script>
