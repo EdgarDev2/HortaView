@@ -6,6 +6,7 @@ use yii\helpers\Html;
 $this->registerCssFile('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js');
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js');
+$this->registerCssFile('@web/css/chart_card.css', ['depends' => [\yii\jui\JuiAsset::class]]);
 ?>
 
 <div class="filtrar-humedad-por-rango-index">
@@ -51,7 +52,11 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/di
                 <button id="btnFiltrar" class="btn btn-outline-primary btn-sm border-0 shadow-none">Filtrar datos</button>
             </div>
         </div>
-        <canvas id="graficoCama" style="width: auto; height: auto;" class="mt-4"></canvas>
+        <div class="chartCard">
+            <div class="chartBox">
+                <canvas id="graficoCama" class="mt-4"></canvas>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -105,7 +110,7 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/di
             options: {
                 animations: {
                     tension: {
-                        duration: 8000,
+                        duration: 4000,
                         easing: 'linear',
                         from: 1,
                         to: 0,
@@ -113,6 +118,8 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/di
                     }
                 },
                 responsive: true,
+                //maintainAspectRatio: false, // Permite ajustar el tamaño del gráfico
+                maintainAspectRatio: false, // Mantiene la proporción de aspecto
                 scales: tipoGrafico === 'radar' ? {
                     r: {
                         beginAtZero: true,
@@ -120,6 +127,9 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/di
                         max: 100,
                         ticks: {
                             stepSize: 10,
+                        },
+                        angleLines: {
+                            borderDash: [0, 0, 0, 55, 250]
                         },
                     },
                 } : {

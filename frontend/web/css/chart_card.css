@@ -1,0 +1,30 @@
+.chartCard {
+    /*background: #F8F9FA;*/
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    height: auto; /* Ajusta la altura automáticamente */
+    width: auto;
+}
+
+.chartBox {
+    width: 100%; /* Usa un ancho relativo */
+    height: 100%;
+    max-width: 900px; /* Tamaño máximo en pantallas grandes */
+    max-height: 683PX;
+    aspect-ratio: 1; /* Mantén una relación de aspecto cuadrada */
+    border: solid 4px white;
+    border-radius: 20px;
+    background: white;
+    padding: 20px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+canvas {
+    width: 100% !important; /* Ocupa todo el ancho disponible */
+    height: 95% !important; /* Ocupa todo el alto disponible */
+}
