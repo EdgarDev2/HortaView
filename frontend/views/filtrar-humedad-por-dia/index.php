@@ -135,13 +135,17 @@ $fechaActual = date('Y-m-d');
                             beginAtZero: true,
                             ticks: {
                                 stepSize: 10
-                            }
+                            },
                         }
                     } : {
                         x: {
                             beginAtZero: true,
                             ticks: {
                                 stepSize: 1
+                            },
+                            title: { // Título para la escala 'x'
+                                display: true,
+                                text: 'Horas'
                             }
                         },
                         y: {
@@ -150,14 +154,13 @@ $fechaActual = date('Y-m-d');
                             beginAtZero: true,
                             ticks: {
                                 stepSize: 10
+                            },
+                            title: { // Título para la escala 'y'
+                                display: true,
+                                text: 'Humedad (%)'
                             }
                         }
                     },
-                    responsive: true,
-                    animation: {
-                        duration: 1000,
-                        easing: 'easeInOutElastic'
-                    }
                 }
 
             }),

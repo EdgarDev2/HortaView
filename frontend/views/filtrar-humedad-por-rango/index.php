@@ -28,15 +28,17 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/di
                 </button>
             </div>
             <!-- Filtros de fecha -->
-            <div class="input-group input-group-sm" style="max-width: 180px;">
-                <input type="date" id="fechaInicio" class="form-control placeholder-wave bg-transparent text-secondary" style="width: 140px; border: none;" title="Seleccione la fecha de inicio">
+            <div class="input-group input-group-sm d-flex align-items-center gap-2 bg-light rounded px-2" style="max-width: 250px;">
+                <label for="fechaInicio" class="form-label mb-0 text-secondary">Fecha Inicio:</label>
+                <input type="date" id="fechaInicio" class="form-control placeholder-wave bg-transparent text-secondary" style="width: 140px; border: none;">
             </div>
-            <div class="input-group input-group-sm" style="max-width: 180px;">
-                <input type="date" id="fechaFin" class="form-control placeholder-wave bg-transparent text-secondary" style="width: 140px; border: none;" title="Seleccione la fecha final">
+            <div class="input-group input-group-sm d-flex align-items-center gap-2 bg-light rounded px-2" style="max-width: 250px;">
+                <label for="fechaFin" class="form-label mb-0 text-secondary">Fecha Fin:</label>
+                <input type="date" id="fechaFin" class="form-control placeholder-wave bg-transparent text-secondary" style="width: 140px; border: none;">
             </div>
             <!-- Selector de cama -->
             <div class="input-group input-group-sm" style="max-width: 162px;">
-                <select id="camaId" class="form-select border-0 border-secondary text-secondary" title="Selecciona cama">
+                <select id="camaId" class="form-select placeholder-wave border-0 text-secondary bg-light rounded" title="Selecciona cama">
                     <option value="" disabled selected>Seleccionar cama</option>
                     <option value="1">Cama 1</option>
                     <option value="2">Cama 2</option>
@@ -46,13 +48,10 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/di
             </div>
             <!-- Botón Filtrar -->
             <div>
-                <button id="btnFiltrar" class="btn btn-primary btn-sm border-0 shadow-none">Filtrar</button>
+                <button id="btnFiltrar" class="btn btn-outline-primary btn-sm border-0 shadow-none">Filtrar datos</button>
             </div>
         </div>
-        <!-- Gráfico -->
-        <div class="col-md-12 mt-3">
-            <canvas id="graficoCama" style="width: 100%; height: 315px;"></canvas>
-        </div>
+        <canvas id="graficoCama" style="width: auto; height: auto;" class="mt-4"></canvas>
     </div>
 </div>
 
@@ -60,51 +59,114 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/di
     let chart; // Variable global para el gráfico
     let tipoGrafico = 'line'; // Tipo de gráfico inicial
 
-    // Función para inicializar el gráfico
+    // Función para inicializar el gráfico con zoom habilitado
     function inicializarGrafico(data) {
         const ctx = document.getElementById('graficoCama').getContext('2d');
+
         if (chart) {
             chart.destroy(); // Elimina el gráfico anterior si existe
         }
+
         chart = new Chart(ctx, {
             type: tipoGrafico,
             data: {
                 labels: Array.from({
                     length: 24
-                }, (_, i) => i + 'h'), // Horas
+                }, (_, i) => i + ':00 hrs'), // Horas
                 datasets: [{
+                        label: 'Mínimo',
+                        data: data.minimos,
+                        borderColor: '#36A2EB',
+                        backgroundColor: 'rgba(54, 162, 235, 0.4)',
+                        fill: tipoGrafico === 'line' ? false : true,
+                        tension: 0.4, // Suaviza las líneas en gráficos de tipo 'line'
+                        borderWidth: 2, // Opcional: ajusta el grosor de la línea
+                    },
+                    {
                         label: 'Promedio',
                         data: data.promedios,
-                        borderColor: '#36A2EB',
-                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                        fill: false,
+                        borderColor: '#4BC0C0',
+                        backgroundColor: 'rgba(75, 192, 192, 0.4)',
+                        fill: tipoGrafico === 'line' ? false : true,
+                        tension: 0.4, // Suaviza las líneas en gráficos de tipo 'line'
+                        borderWidth: 2,
                     },
                     {
                         label: 'Máximo',
                         data: data.maximos,
                         borderColor: '#FF6384',
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        fill: false,
-                    },
-                    {
-                        label: 'Mínimo',
-                        data: data.minimos,
-                        borderColor: '#4BC0C0',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        fill: false,
+                        backgroundColor: 'rgba(255, 99, 132, 0.4)',
+                        fill: tipoGrafico === 'line' ? false : true,
+                        tension: 0.4, // Suaviza las líneas en gráficos de tipo 'line'
+                        borderWidth: 2,
                     },
                 ],
             },
             options: {
+                animations: {
+                    tension: {
+                        duration: 8000,
+                        easing: 'linear',
+                        from: 1,
+                        to: 0,
+                        loop: false
+                    }
+                },
                 responsive: true,
-                scales: {
-                    y: {
+                scales: tipoGrafico === 'radar' ? {
+                    r: {
                         beginAtZero: true,
+                        min: 0,
+                        max: 100,
+                        ticks: {
+                            stepSize: 10,
+                        },
+                    },
+                } : {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                        },
+                        title: {
+                            display: true,
+                            text: 'Horas',
+                        },
+                    },
+                    y: {
+                        min: 0,
+                        max: 100,
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 10,
+                        },
+                        title: {
+                            display: true,
+                            text: 'Humedad (%)',
+                        },
+                    },
+                },
+                plugins: {
+                    zoom: {
+                        zoom: {
+                            wheel: {
+                                enabled: true, // Habilitar zoom con rueda del ratón
+                                speed: 0.1, // Velocidad del zoom
+                            },
+                            pinch: {
+                                enabled: true, // Habilitar zoom con pinch
+                                threshold: 2, // Número de dedos para activar el zoom
+                            },
+                            drag: {
+                                enabled: true, // Habilitar desplazamiento
+                            },
+                        },
                     },
                 },
             },
         });
     }
+
 
     // Función para realizar la solicitud AJAX
     function cargarDatos(fechaInicio, fechaFin, camaId) {
@@ -132,6 +194,14 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/di
         const fechaInicio = document.getElementById('fechaInicio').value || obtenerFechaActual();
         const fechaFin = document.getElementById('fechaFin').value || obtenerFechaActual();
         const camaId = document.getElementById('camaId').value;
+
+        // Limpiar el canvas antes de redibujar
+        const ctx = document.getElementById('graficoCama').getContext('2d');
+        if (chart) {
+            chart.destroy(); // Destruye el gráfico existente
+        }
+
+        // Cargar los datos
         cargarDatos(fechaInicio, fechaFin, camaId);
     }
 
@@ -157,12 +227,24 @@ $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/di
         cargarDatos(fechaInicio, fechaFin, camaId);
     });
 
-    // Cargar datos iniciales al cargar la página
     document.addEventListener('DOMContentLoaded', function() {
         const fechaActual = obtenerFechaActual();
         document.getElementById('fechaInicio').value = fechaActual;
         document.getElementById('fechaFin').value = fechaActual;
-        cargarDatos(fechaActual, fechaActual, '1'); // Cargar datos de la cama 1 por defecto
+
+        // Establecer cama predeterminada
+        const camaIdPredeterminada = '1';
+        document.getElementById('camaId').value = camaIdPredeterminada;
+
+        // Cargar datos automáticamente para la cama predeterminada
+        cargarDatos(fechaActual, fechaActual, camaIdPredeterminada);
+        $(document).ready(function() {
+            setTimeout(clickbutton, 10);
+
+            function clickbutton() {
+                $("#btnFiltrar").click();
+            }
+        });
     });
 
     // Función para descargar el gráfico
