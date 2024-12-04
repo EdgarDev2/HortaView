@@ -1,5 +1,5 @@
 <?php
-$this->title = 'Filtrar humedad por rango';
+$this->title = 'Humedad del suelo por rango';
 
 use yii\helpers\Html;
 
@@ -7,10 +7,13 @@ $this->registerCssFile('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js');
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js');
 $this->registerCssFile('@web/css/chart_card.css', ['depends' => [\yii\jui\JuiAsset::class]]);
+date_default_timezone_set('America/Mexico_City');
+$fechaActual = date('Y-m-d');
 ?>
 
 <div class="filtrar-humedad-por-rango-index">
-    <div class="row mt-2">
+    <h1 class="display-6 text-secondary text-left mb-3"><?= Html::encode($this->title) ?></h1>
+    <div class="row">
         <!-- Botones de gráfico y filtros -->
         <div class="col-md-12 d-flex flex-wrap align-items-center gap-2">
             <!-- Botones de tipo de gráfico -->
@@ -41,10 +44,10 @@ $this->registerCssFile('@web/css/chart_card.css', ['depends' => [\yii\jui\JuiAss
             <div class="input-group input-group-sm" style="max-width: 162px;">
                 <select id="camaId" class="form-select placeholder-wave border-0 text-secondary bg-light rounded" title="Selecciona cama">
                     <option value="" disabled selected>Seleccionar cama</option>
-                    <option value="1">Cama 1</option>
-                    <option value="2">Cama 2</option>
-                    <option value="3">Cama 3</option>
-                    <option value="4">Cama 4</option>
+                    <option value="1">Ka'anche' 1</option>
+                    <option value="2">Ka'anche' 2</option>
+                    <option value="3">Ka'anche' 3</option>
+                    <option value="4">Ka'anche' 4</option>
                 </select>
             </div>
             <!-- Botón Filtrar -->

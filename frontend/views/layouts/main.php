@@ -67,9 +67,10 @@ AppAsset::register($this);
                 [
                     'label' => 'Predicciones',
                     'items' => [ // Submenús
-                        ['label' => 'Corto plazo', 'url' => ['/predicciones/index']],
-                        ['label' => 'Mediano plazo', 'url' => ['/predicciones/mediano-plazo']],
-                        ['label' => 'Largo plazo', 'url' => ['/predicciones/largo-plazo']],
+                        ['label' => 'Humedad del suelo (siguiente ciclo)', 'url' => ['/predicciones/index']],
+                        ['label' => 'Porcentaje de germinación (siguiente ciclo)', 'url' => ['/predicciones/mediano-plazo']],
+                        ['label' => 'Peso de la producción final (siguiente ciclo)', 'url' => ['/predicciones/largo-plazo']],
+                        ['label' => 'Uso del agua (siguiente ciclo)', 'url' => ['/predicciones/largo-plazo']],
                     ],
                 ],
                 ['label' => 'Acerca de', 'url' => ['/site/about']],
