@@ -51,22 +51,25 @@ $fechaActual = date('Y-m-d');
     </div>
 
 </div>
-<?php
-$this->title = 'Gráficas';
-date_default_timezone_set('America/Mexico_City');
-$fechaActual = date('Y-m-d');
-?>
+
 <script>
-    const fechaActual = <?= json_encode($fechaActual) ?>;
-    console.log(fechaActual);
+    function obtenerFechaActual() {
+        const hoy = new Date();
+        const year = hoy.getFullYear();
+        const month = String(hoy.getMonth() + 1).padStart(2, '0');
+        const day = String(hoy.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
     const graficos = {};
 
     // Inicializar gráficos al cargar la página
     document.addEventListener('DOMContentLoaded', function() {
+        const fechaActual = obtenerFechaActual();
         for (let i = 1; i <= 4; i++) {
             inicializarGrafico('graficoCama' + i, [], 'radar');
+            document.getElementById('fechaCama' + i).value = fechaActual;
         }
-
     });
 
 
