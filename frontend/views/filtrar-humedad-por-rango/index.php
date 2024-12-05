@@ -1,14 +1,18 @@
 <?php
-$this->title = 'Humedad del suelo por rango';
 
 use yii\helpers\Html;
 
+$this->title = 'Filtrar humedad del suelo por día';
 $this->registerCssFile('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js');
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js');
-$this->registerCssFile('@web/css/chart_card.css', ['depends' => [\yii\jui\JuiAsset::class]]);
-date_default_timezone_set('America/Mexico_City');
-$fechaActual = date('Y-m-d');
+$this->registerCssFile('@web/css/chart_card.css');
+// Clases comunes bootstrap
+$btnClass = 'btn btn-outline-success btn-sm border-0 shadow-none';
+$btnDownloadClass = 'btn btn-outline-primary btn-sm border-0 shadow-none';
+$cardInputDate = 'input-group input-group-sm d-flex align-items-center gap-2 bg-light rounded px-2';
+$inputDate = 'form-control placeholder-wave bg-transparent text-secondary';
+$selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light rounded';
 ?>
 
 <div class="filtrar-humedad-por-rango-index">
@@ -18,31 +22,31 @@ $fechaActual = date('Y-m-d');
         <div class="col-md-12 d-flex flex-wrap align-items-center gap-2">
             <!-- Botones de tipo de gráfico -->
             <div class="btn-group" role="group" aria-label="Gráficos">
-                <button class="btn btn-outline-success btn-sm border-0 shadow-none" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line')">
+                <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line')">
                     <i class="fas fa-chart-line"></i> Lineal
                 </button>
-                <button class="btn btn-outline-success btn-sm border-0 shadow-none" type="button" title="Gráfico de tipo Barra" onclick="cambiarTipoGrafico('bar')">
+                <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Barra" onclick="cambiarTipoGrafico('bar')">
                     <i class="fas fa-chart-bar"></i> Barra
                 </button>
-                <button class="btn btn-outline-success btn-sm border-0 shadow-none" type="button" title="Gráfico de tipo Radar" onclick="cambiarTipoGrafico('radar')">
+                <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Radar" onclick="cambiarTipoGrafico('radar')">
                     <i class="fas fa-chart-pie"></i> Radar
                 </button>
-                <button class="btn btn-outline-primary btn-sm border-0 shadow-none" type="button" title="Descargar gráfico como imagen" onclick="descargarImagen('graficoCama', 'grafico_cama.png')">
+                <button class="<?= $btnDownloadClass ?>" type="button" title="Descargar gráfico como imagen" onclick="descargarImagen('graficoCama', 'grafico_cama.png')">
                     <i class="fas fa-download"></i> Descargar
                 </button>
             </div>
             <!-- Filtros de fecha -->
-            <div class="input-group input-group-sm d-flex align-items-center gap-2 bg-light rounded px-2" style="max-width: 250px;">
+            <div class="<?= $cardInputDate ?>" style="max-width: 250px;">
                 <label for="fechaInicio" class="form-label mb-0 text-secondary">Fecha Inicio:</label>
-                <input type="date" id="fechaInicio" class="form-control placeholder-wave bg-transparent text-secondary" style="width: 140px; border: none;">
+                <input type="date" id="fechaInicio" class="<?= $inputDate ?>" style="width: 140px; border: none;">
             </div>
-            <div class="input-group input-group-sm d-flex align-items-center gap-2 bg-light rounded px-2" style="max-width: 250px;">
+            <div class="<?= $cardInputDate ?>" style="max-width: 250px;">
                 <label for="fechaFin" class="form-label mb-0 text-secondary">Fecha Fin:</label>
-                <input type="date" id="fechaFin" class="form-control placeholder-wave bg-transparent text-secondary" style="width: 140px; border: none;">
+                <input type="date" id="fechaFin" class="<?= $inputDate ?>" style="width: 140px; border: none;">
             </div>
             <!-- Selector de cama -->
             <div class="input-group input-group-sm" style="max-width: 162px;">
-                <select id="camaId" class="form-select placeholder-wave border-0 text-secondary bg-light rounded" title="Selecciona cama">
+                <select id="camaId" class="<?= $selectPlace ?>" title="Selecciona cama">
                     <option value="" disabled selected>Seleccionar cama</option>
                     <option value="1">Ka'anche' 1</option>
                     <option value="2">Ka'anche' 2</option>
@@ -117,7 +121,7 @@ $fechaActual = date('Y-m-d');
                         easing: 'linear',
                         from: 1,
                         to: 0,
-                        loop: false
+                        loop: true
                     }
                 },
                 responsive: true,
@@ -250,7 +254,7 @@ $fechaActual = date('Y-m-d');
         document.getElementById('camaId').value = camaIdPredeterminada;
 
         // Cargar datos automáticamente para la cama predeterminada
-        cargarDatos(fechaActual, fechaActual, camaIdPredeterminada);
+        //cargarDatos(fechaActual, fechaActual, camaIdPredeterminada);
         $(document).ready(function() {
             setTimeout(clickbutton, 10);
 

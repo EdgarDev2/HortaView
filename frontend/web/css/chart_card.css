@@ -1,3 +1,6 @@
+.inputsDate{
+    max-width: 250px;
+}
 .chartCard {
     /*background: #F8F9FA;*/
     display: flex;

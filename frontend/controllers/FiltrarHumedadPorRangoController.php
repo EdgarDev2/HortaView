@@ -79,10 +79,9 @@ class FiltrarHumedadPorRangoController extends Controller
     public function actionAjax()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-
-        $fechaInicio = Yii::$app->request->post('fechaInicio', date('Y-m-d')); // Fecha actual por defecto
-        $fechaFin = Yii::$app->request->post('fechaFin', date('Y-m-d'));       // Fecha actual por defecto
-        $camaId = Yii::$app->request->post('camaId', '1');                    // Cama 1 por defecto
+        $fechaInicio = Yii::$app->request->post('fechaInicio');
+        $fechaFin = Yii::$app->request->post('fechaFin');
+        $camaId = Yii::$app->request->post('camaId');
 
         // Determinar el modelo según el camaId
         $modelClass = match ($camaId) {

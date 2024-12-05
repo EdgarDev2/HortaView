@@ -1,58 +1,234 @@
 <?php
-$this->title = 'Filtrar por día';
 
 use yii\helpers\Html;
+
+$this->title = 'Filtrar humedad del suelo por día';
+
 
 $this->registerCssFile('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js');
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js');
-date_default_timezone_set('America/Mexico_City');
-$fechaActual = date('Y-m-d');
+$this->registerCssFile('@web/css/chart_card.css');
+// Clases comunes bootstrap
+$btnClass = 'btn btn-outline-success btn-sm border-0 shadow-none';
+$btnDownloadClass = 'btn btn-outline-primary btn-sm border-0 shadow-none';
+$cardInputDate = 'input-group input-group-sm d-flex align-items-center gap-2 bg-light rounded px-2';
+$inputDate = 'form-control placeholder-wave bg-transparent text-secondary';
+$selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light rounded';
 ?>
 
-<div class="filtrar-humedad-por-dia-index">
-    <!--<h1 class="display-6 text-success text-left">Filtrar datos de humedad del suelo</h1>
-    <h5 class="text-success fw-normal text-end">Fecha actual: <span class="text-secondary"><?= Html::encode($fechaActual) ?></span></h5>
-    <hr class="border border-success">-->
-    <div class="row mt-1">
-        <?php for ($i = 1; $i <= 4; $i++): ?>
-            <div class="col-md-6 mt-3"> <!-- Clase de margen inferior -->
-                <h5 class="text-secondary mb-3">Humedad del suelo por día cama Ka'anche' <?= $i ?></h5>
-                <div class="btn-toolbar mb-3" role="toolbar" aria-label="Toolbar with button groups">
-                    <div class="btn-group" role="group" aria-label="First group"> <!--me-2-->
-                        <button class="btn btn-outline-success border-0" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line', 'graficoCama<?= $i ?>')">
-                            <i class="fas fa-chart-line"></i>
-                        </button>
-                        <button class="btn btn-outline-success border-0" type="button" title="Gráfico de tipo Barra" onclick="cambiarTipoGrafico('bar', 'graficoCama<?= $i ?>')">
-                            <i class="fas fa-chart-bar"></i>
-                        </button>
-                        <button class="btn btn-outline-success border-0" type="button" title="Gráfico de tipo Radar" onclick="cambiarTipoGrafico('radar', 'graficoCama<?= $i ?>')">
-                            <i class="fas fa-chart-pie"></i>
-                        </button>
-                        <button class="btn btn-outline-primary border-0" type="button"
-                            title="Descargar gráfico como imagen"
-                            onclick="descargarImagen('graficoCama<?= $i ?>', 'grafico_cama<?= $i ?>.png')">
-                            <i class="fas fa-download"></i>
-                        </button>
-                    </div>
-                    <div class="input-group">
-                        <input type="date"
-                            class="form-control placeholder-wave bg-transparent text-secondary"
-                            id="fechaCama<?= $i ?>"
-                            name="fechaCama<?= $i ?>"
-                            style="width: 140px; border: none;"
-                            title="Selecciona una fecha para filtrar los datos"
-                            onchange="actualizarGrafico(<?= $i ?>)">
-                    </div>
-                </div>
-                <canvas id="graficoCama<?= $i ?>" style="width: 100%; height: 315px;"></canvas>
+<div class="filtrar-humedad-por-rango-index">
+    <h1 class="display-6 text-secondary text-left mb-3"><?= Html::encode($this->title) ?></h1>
+    <div class="row">
+        <!-- Botones de gráfico y filtros -->
+        <div class="col-md-12 d-flex flex-wrap align-items-center gap-2">
+            <!-- Botones de tipo de gráfico -->
+            <div class="btn-group" role="group" aria-label="Gráficos">
+                <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line')">
+                    <i class="fas fa-chart-line"></i> Lineal
+                </button>
+                <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Barra" onclick="cambiarTipoGrafico('bar')">
+                    <i class="fas fa-chart-bar"></i> Barra
+                </button>
+                <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Radar" onclick="cambiarTipoGrafico('radar')">
+                    <i class="fas fa-chart-pie"></i> Radar
+                </button>
+                <button class="<?= $btnDownloadClass ?>" type="button" title="Descargar gráfico como imagen" onclick="descargarImagen('graficoCama', 'grafico_cama.png')">
+                    <i class="fas fa-download"></i> Descargar
+                </button>
             </div>
-        <?php endfor; ?>
+            <!-- Filtros de fecha -->
+            <div class="<?= $cardInputDate ?>" style="max-width: 250px;">
+                <label for="fechaInicio" class="form-label mb-0 text-secondary">Fecha Inicio:</label>
+                <input type="date" id="fechaInicio" class="<?= $inputDate ?>" style="width: 140px; border: none;">
+            </div>
+            <!-- Selector de cama -->
+            <div class="input-group input-group-sm" style="max-width: 162px;">
+                <select id="camaId" class="<?= $selectPlace ?>" title="Selecciona cama">
+                    <option value="" disabled selected>Seleccionar cama</option>
+                    <option value="1">Ka'anche' 1</option>
+                    <option value="2">Ka'anche' 2</option>
+                    <option value="3">Ka'anche' 3</option>
+                    <option value="4">Ka'anche' 4</option>
+                </select>
+            </div>
+            <!-- Botón Filtrar -->
+            <div>
+                <button id="btnFiltrar" class="btn btn-outline-primary btn-sm border-0 shadow-none">Filtrar datos</button>
+            </div>
+        </div>
+        <div class="chartCard">
+            <div class="chartBox">
+                <canvas id="graficoCama" class="mt-4"></canvas>
+            </div>
+        </div>
     </div>
-
 </div>
 
 <script>
+    let chart; // Variable global para el gráfico
+    let tipoGrafico = 'line'; // Tipo de gráfico inicial
+
+    // Función para inicializar el gráfico con zoom habilitado
+    function inicializarGrafico(data) {
+        const ctx = document.getElementById('graficoCama').getContext('2d');
+
+        if (chart) {
+            chart.destroy(); // Elimina el gráfico anterior si existe
+        }
+
+        chart = new Chart(ctx, {
+            type: tipoGrafico,
+            data: {
+                labels: Array.from({
+                    length: 24
+                }, (_, i) => i + ':00 hrs'), // Horas
+                datasets: [{
+                        label: 'Mínimo',
+                        data: data.minimos,
+                        borderColor: '#36A2EB',
+                        backgroundColor: 'rgba(54, 162, 235, 0.4)',
+                        fill: tipoGrafico === 'line' ? false : true,
+                        tension: 0.4, // Suaviza las líneas en gráficos de tipo 'line'
+                        borderWidth: 2, // Opcional: ajusta el grosor de la línea
+                    },
+                    {
+                        label: 'Promedio',
+                        data: data.promedios,
+                        borderColor: '#4BC0C0',
+                        backgroundColor: 'rgba(75, 192, 192, 0.4)',
+                        fill: tipoGrafico === 'line' ? false : true,
+                        tension: 0.4, // Suaviza las líneas en gráficos de tipo 'line'
+                        borderWidth: 2,
+                    },
+                    {
+                        label: 'Máximo',
+                        data: data.maximos,
+                        borderColor: '#FF6384',
+                        backgroundColor: 'rgba(255, 99, 132, 0.4)',
+                        fill: tipoGrafico === 'line' ? false : true,
+                        tension: 0.4, // Suaviza las líneas en gráficos de tipo 'line'
+                        borderWidth: 2,
+                    },
+                ],
+            },
+            options: {
+                animations: {
+                    tension: {
+                        duration: 4000,
+                        easing: 'linear', //easeOutBounce, easeInOut, easeInOutQuad,
+                        from: 1,
+                        to: 0,
+                        loop: true
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: false, // Mantiene la proporción de aspecto
+                scales: tipoGrafico === 'radar' ? {
+                    r: {
+                        beginAtZero: true,
+                        min: 0,
+                        max: 100,
+                        ticks: {
+                            stepSize: 10,
+                        },
+                        angleLines: {
+                            //borderDash: [0, 0, 0, 0, 250]
+                        },
+                    },
+                } : {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                        },
+                        title: {
+                            display: true,
+                            text: 'Horas',
+                        },
+                    },
+                    y: {
+                        min: 0,
+                        max: 100,
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 10,
+                        },
+                        title: {
+                            display: true,
+                            text: 'Humedad (%)',
+                        },
+                    },
+                },
+                plugins: {
+                    zoom: {
+                        zoom: {
+                            wheel: {
+                                enabled: true, // Habilitar zoom con rueda del ratón
+                                speed: 0.1, // Velocidad del zoom
+                            },
+                            pinch: {
+                                enabled: true, // Habilitar zoom con pinch
+                                threshold: 2, // Número de dedos para activar el zoom
+                            },
+                            drag: {
+                                enabled: true, // Habilitar desplazamiento
+                            },
+                            pan: {
+                                enabled: true,
+                                mode: 'xy', // Permite desplazar en ambas direcciones (x e y)
+                                speed: 10, // Velocidad del desplazamiento
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    }
+
+    // Función para realizar la solicitud AJAX
+    function cargarDatos(fechaInicio, camaId) {
+        console.log('Datos enviados:', {
+            fechaInicio,
+            camaId
+        });
+
+        $.ajax({
+            type: 'POST',
+            url: 'index.php?r=filtrar-humedad-por-dia/solicitud',
+            data: {
+                fechaInicio,
+                camaId
+            },
+            success: function(response) {
+                if (response.success) {
+                    inicializarGrafico(response);
+                } else {
+                    alert(response.message || 'Error al cargar los datos.');
+                }
+            },
+        });
+    }
+
+
+
+    // Cambiar el tipo de gráfico
+    function cambiarTipoGrafico(nuevoTipo) {
+        tipoGrafico = nuevoTipo;
+        const fechaInicio = document.getElementById('fechaInicio').value || obtenerFechaActual();
+        const camaId = document.getElementById('camaId').value;
+
+        // Limpiar el canvas antes de redibujar
+        const ctx = document.getElementById('graficoCama').getContext('2d');
+        if (chart) {
+            chart.destroy(); // Destruye el gráfico existente
+        }
+
+        // Cargar los datos
+        cargarDatos(fechaInicio, camaId);
+    }
+
+    // Obtener fecha actual en formato YYYY-MM-DD
     function obtenerFechaActual() {
         const hoy = new Date();
         const year = hoy.getFullYear();
@@ -61,173 +237,42 @@ $fechaActual = date('Y-m-d');
         return `${year}-${month}-${day}`;
     }
 
-    const graficos = {};
+    // Configurar el botón de filtrar
+    document.getElementById('btnFiltrar').addEventListener('click', function() {
+        const fechaInicio = document.getElementById('fechaInicio').value;
+        const camaId = document.getElementById('camaId').value;
 
-    // Inicializar gráficos al cargar la página
-    document.addEventListener('DOMContentLoaded', function() {
-        const fechaActual = obtenerFechaActual();
-        for (let i = 1; i <= 4; i++) {
-            inicializarGrafico('graficoCama' + i, [], 'radar');
-            document.getElementById('fechaCama' + i).value = fechaActual;
-        }
-    });
-
-
-    function inicializarGrafico(id, data, tipo = 'radar') {
-        const ctx = document.getElementById(id).getContext('2d');
-
-        // Destruir el gráfico previo si ya existe
-        if (graficos[id]) {
-            graficos[id].chart.destroy();
-        }
-
-        // Guardar el tipo de gráfico
-        graficos[id] = {
-            tipo,
-            chart: new Chart(ctx, {
-                type: tipo,
-                data: {
-                    labels: Array.from({
-                        length: 24
-                    }, (_, i) => i + ':00 hrs'), // Horas del día
-                    datasets: [{
-                            label: 'Promedio Humedad',
-                            data: data.promedios || [],
-                            borderColor: '#4BC0C0',
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            //pointBackgroundColor: '#4BC0C0'
-                        },
-                        {
-                            label: 'Mínimo Humedad',
-                            data: data.minimos || [],
-                            borderColor: '#36A2EB',
-                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                            //pointBackgroundColor: '#36A2EB'
-                        },
-                        {
-                            label: 'Máximo Humedad',
-                            data: data.maximos || [],
-                            borderColor: '#FF6384',
-                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                            //pointBackgroundColor: '#FF6384'
-                        },
-                    ],
-                },
-                options: {
-                    plugins: {
-                        zoom: {
-                            zoom: {
-                                wheel: {
-                                    enabled: true,
-                                    speed: 0.1
-                                },
-                                pinch: {
-                                    enabled: true,
-                                    threshold: 2
-                                },
-                                drag: {
-                                    enabled: true
-                                }
-                            }
-                        }
-                    },
-                    scales: tipo === 'radar' ? {
-                        r: {
-                            min: 0,
-                            max: 100,
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 10
-                            },
-                        }
-                    } : {
-                        x: {
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 1
-                            },
-                            title: { // Título para la escala 'x'
-                                display: true,
-                                text: 'Horas'
-                            }
-                        },
-                        y: {
-                            min: 0,
-                            max: 100,
-                            beginAtZero: true,
-                            ticks: {
-                                stepSize: 10
-                            },
-                            title: { // Título para la escala 'y'
-                                display: true,
-                                text: 'Humedad (%)'
-                            }
-                        }
-                    },
-                }
-
-            }),
-        };
-    }
-
-    // Cambiar tipo de gráfico
-    cambiarTipoGrafico = function(tipo, id) {
-        const data = graficos[id].chart.data; // Mantener los datos
-        inicializarGrafico(id, {
-            promedios: data.datasets[0].data,
-            maximos: data.datasets[1].data,
-            minimos: data.datasets[2].data,
-        }, tipo);
-    };
-
-    // Actualizar gráfico al filtrar por fecha
-    actualizarGrafico = function(Id) {
-        const fechaInput = document.getElementById('fechaCama' + Id);
-        const fecha = fechaInput.value;
-
-        if (!fecha) {
-            alert('Por favor selecciona una fecha válida.');
+        if (!fechaInicio || !camaId) {
+            alert('Por favor, completa todos los filtros.');
             return;
         }
-        // Enviar solicitud AJAX
-        ajax(fecha, Id);
-    };
+        cargarDatos(fechaInicio, camaId);
+    });
 
-    function ajax(fecha, idcama) {
-        $.ajax({
-            url: 'index.php?r=filtrar-humedad-por-dia/ajax',
-            type: 'POST',
-            data: {
-                fecha: fecha,
-                camaId: 'fechaCama' + idcama // Usar idcama, no 'Id'
-            },
-            success: function(response) {
-                if (response.success) {
-                    const idGrafico = `graficoCama${idcama}`; // Aquí solo quise aplicar interpolación de cadenas.
-                    inicializarGrafico(idGrafico, {
-                        promedios: response.promedios,
-                        maximos: response.maximos,
-                        minimos: response.minimos,
-                    }, graficos[idGrafico].tipo); // Usar el tipo actual del gráfico
-                } else {
-                    alert(response.message || 'No se encontraron datos para la fecha seleccionada.');
-                }
-            },
-            error: function() {
-                alert('Error al conectar con el servidor.');
+    document.addEventListener('DOMContentLoaded', function() {
+        const fechaActual = obtenerFechaActual();
+        document.getElementById('fechaInicio').value = fechaActual;
+
+        // Establecer cama predeterminada
+        const camaIdPredeterminada = '1';
+        document.getElementById('camaId').value = camaIdPredeterminada;
+
+        // Cargar datos automáticamente para la cama predeterminada
+        //cargarDatos(fechaActual, camaIdPredeterminada);
+        $(document).ready(function() {
+            setTimeout(clickbutton, 100);
+
+            function clickbutton() {
+                $("#btnFiltrar").click();
             }
         });
-    }
+    });
 
-    function descargarImagen(canvasId, fileName) {
-        const canvas = document.getElementById(canvasId);
-        if (canvas) {
-            const link = document.createElement('a'); // Crear un enlace
-            link.href = canvas.toDataURL('image/png'); // Convertir el canvas a una URL de imagen
-            link.download = fileName; // Asignar un nombre al archivo descargable
-            link.click(); // Simular el clic para iniciar la descarga
-        } else {
-            alert('No se pudo encontrar el gráfico para descargar.');
-        }
-    }
+    // Función para descargar el gráfico
+    descargarImagen = function(canvasId, nombreArchivo) {
+        let link = document.createElement('a');
+        link.href = document.getElementById(canvasId).toDataURL();
+        link.download = nombreArchivo;
+        link.click();
+    };
 </script>

@@ -23,11 +23,11 @@ class FiltrarHumedadPorDiaController extends Controller
             // Filtro de control de acceso
             'access' => [
                 'class' => AccessControl::class,
-                'only' => ['index'], // Acciones a restringir
+                'only' => ['index', 'solicitud'], // Incluye 'solicitud' para aplicar las reglas
                 'rules' => [
                     [
                         'allow' => true,
-                        'roles' => ['@'], // '@' solo usuarios autenticados tienen acceso
+                        'roles' => ['@'], // Solo usuarios autenticados pueden acceder
                     ],
                 ],
             ],
@@ -36,6 +36,7 @@ class FiltrarHumedadPorDiaController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'delete' => ['POST'], // La acción 'delete' solo puede ser accedida mediante POST
+                    'solicitud' => ['POST'], // Asegura que 'solicitud' solo acepte solicitudes POST
                 ],
             ],
         ];
@@ -77,18 +78,17 @@ class FiltrarHumedadPorDiaController extends Controller
         return $this->render('index');
     }
 
-    public function actionAjax()
+    public function actionSolicitud()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-
-        $fecha = Yii::$app->request->post('fecha');
+        $fecha = Yii::$app->request->post('fechaInicio');
         $camaId = Yii::$app->request->post('camaId');
 
         $modelClass = match ($camaId) {
-            'fechaCama1' => Cama1::class,
-            'fechaCama2' => Cama2::class,
-            'fechaCama3' => Cama3::class,
-            'fechaCama4' => Cama4::class,
+            '1' => Cama1::class,
+            '2' => Cama2::class,
+            '3' => Cama3::class,
+            '4' => Cama4::class,
             default => null,
         };
 
