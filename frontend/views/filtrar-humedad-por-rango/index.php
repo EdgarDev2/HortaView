@@ -2,7 +2,7 @@
 
 use yii\helpers\Html;
 
-$this->title = 'Filtrar humedad del suelo por día';
+$this->title = 'Filtrar humedad del suelo por rango';
 $this->registerCssFile('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js');
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js');
@@ -187,6 +187,11 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
 
     // Función para realizar la solicitud AJAX
     function cargarDatos(fechaInicio, fechaFin, camaId) {
+        console.log('Datos enviados:', {
+            fechaInicio,
+            fechaFin,
+            camaId
+        });
         $.ajax({
             type: 'POST',
             url: 'index.php?r=filtrar-humedad-por-rango/ajax',
@@ -203,6 +208,16 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                 }
             },
         });
+    }
+
+    // Configuración para actualizar cada minuto
+    function iniciarActualizacionAutomatica() {
+        setInterval(() => {
+            const fechaInicio = document.getElementById('fechaInicio').value || obtenerFechaActual();
+            const fechaFin = document.getElementById('fechaFin').value || obtenerFechaActual();
+            const camaId = document.getElementById('camaId').value;
+            cargarDatos(fechaInicio, fechaFin, camaId);
+        }, 60000); // Cada 60,000 ms = 1 minuto
     }
 
     // Cambiar el tipo de gráfico
@@ -262,6 +277,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                 $("#btnFiltrar").click();
             }
         });
+        iniciarActualizacionAutomatica(); // Inicia la actualización automática
     });
 
     // Función para descargar el gráfico
