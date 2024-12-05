@@ -210,7 +210,14 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
         });
     }
 
-
+    // Configuración para actualizar cada minuto
+    function iniciarActualizacionAutomatica() {
+        setInterval(() => {
+            const fechaInicio = document.getElementById('fechaInicio').value || obtenerFechaActual();
+            const camaId = document.getElementById('camaId').value;
+            cargarDatos(fechaInicio, camaId);
+        }, 60000); // Cada 60,000 ms = 1 minuto
+    }
 
     // Cambiar el tipo de gráfico
     function cambiarTipoGrafico(nuevoTipo) {
@@ -266,6 +273,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                 $("#btnFiltrar").click();
             }
         });
+        iniciarActualizacionAutomatica(); // Inicia la actualización automática
     });
 
     // Función para descargar el gráfico
