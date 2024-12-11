@@ -27,39 +27,39 @@ class PerfilController extends Controller
             parent::behaviors(),
             [
                 'access'  =>  [
-                        'class'  =>  \yii\filters\AccessControl::className(),
-                        'only'  =>  ['index',  'view','create',  'update',  'delete'],
-                        'rules'  =>  [
-                                [
-                                    'actions'  =>  ['index',  'view','create',  'update',  'delete'],
-                                    'allow'  =>  true,
-                                    'roles'  =>  ['@'],
-                                ],
+                    'class'  =>  \yii\filters\AccessControl::className(),
+                    'only'  =>  ['index',  'view', 'create',  'update',  'delete'],
+                    'rules'  =>  [
+                        [
+                            'actions'  =>  ['index',  'view', 'create',  'update',  'delete'],
+                            'allow'  =>  true,
+                            'roles'  =>  ['@'],
                         ],
+                    ],
                 ],
 
                 'access2' => [
                     'class' => \yii\filters\AccessControl::className(),
-                    'only' => ['index', 'view','create', 'update', 'delete'],
+                    'only' => ['index', 'view', 'create', 'update', 'delete'],
                     'rules' => [
                         [
-                           'actions' => ['index', 'view','create', 'update', 'delete'],
+                            'actions' => ['index', 'view', 'create', 'update', 'delete'],
                             'allow' => true,
                             'roles' => ['@'],
                             'matchCallback' => function ($rule, $action) {
                                 return PermisosHelpers::requerirEstado('Activo');
                             }
-                         ],
-                            
+                        ],
+
                     ],
-                       
+
                 ],
 
                 'verbs'  =>  [
-                        'class'  =>  VerbFilter::className(),
-                        'actions'  =>  [
-                                        'delete'  =>  ['post'],
-                                    ],
+                    'class'  =>  VerbFilter::className(),
+                    'actions'  =>  [
+                        'delete'  =>  ['post'],
+                    ],
                 ],
             ]
         );
@@ -72,12 +72,12 @@ class PerfilController extends Controller
      */
     public  function  actionIndex()
     {
-        if  ($ya_existe  =  RegistrosHelpers::userTiene('perfil'))  {
-                return  $this->render('view',  [
-                                  'model'  =>  $this->findModel($ya_existe),
-        ]);
-        }  else  {
-                return  $this->redirect(['create']);
+        if ($ya_existe  =  RegistrosHelpers::userTiene('perfil')) {
+            return  $this->render('view',  [
+                'model'  =>  $this->findModel($ya_existe),
+            ]);
+        } else {
+            return  $this->redirect(['create']);
         }
     }
 
@@ -89,12 +89,12 @@ class PerfilController extends Controller
      */
     public  function  actionView()
     {
-        if  ($ya_existe  =  RegistrosHelpers::userTiene('perfil'))  {
-                return  $this->render('view',  [
-                                      'model'  =>  $this->findModel($ya_existe),
-                ]);
-        }  else  {
-                return  $this->redirect(['create']);
+        if ($ya_existe  =  RegistrosHelpers::userTiene('perfil')) {
+            return  $this->render('view',  [
+                'model'  =>  $this->findModel($ya_existe),
+            ]);
+        } else {
+            return  $this->redirect(['create']);
         }
     }
 
@@ -121,23 +121,22 @@ class PerfilController extends Controller
     // }
     public function actionCreate()
     {
-        $model = new Perfil;        
+        $model = new Perfil;
         $model->user_id = \Yii::$app->user->identity->id;
         if ($ya_existe = RegistrosHelpers::userTiene('perfil')) {
             return $this->render('view', [
-                   'model' => $this->findModel($ya_existe),
-                ]);
-        } elseif ($model->load(Yii::$app->request->post()) && $model->save()){
-                            
+                'model' => $this->findModel($ya_existe),
+            ]);
+        } elseif ($model->load(Yii::$app->request->post()) && $model->save()) {
+
             return $this->redirect(['view']);
-                            
         } else {
-                    
+
             return $this->render('create', [
 
-                    'model' => $model,
+                'model' => $model,
 
-                    ]);
+            ]);
         }
     }
 
@@ -163,25 +162,22 @@ class PerfilController extends Controller
 
     public function actionUpdate()
     {
-        PermisosHelpers::requerirUpgradeA('Pago');  
-        
-        if($model =  Perfil::find()->where(['user_id' =>Yii::$app->user->identity->id])->one()) {
-            
+        PermisosHelpers::requerirUpgradeA('Pago');
+
+        if ($model =  Perfil::find()->where(['user_id' => Yii::$app->user->identity->id])->one()) {
+
             if ($model->load(Yii::$app->request->post()) && $model->save()) {
-                
+
                 return $this->redirect(['view']);
-            
             } else {
-                
+
                 return $this->render('update', [
-                        'model' => $model, 
-                    ]);
+                    'model' => $model,
+                ]);
             }
-        
         } else {
-                
+
             throw new NotFoundHttpException('No Existe el Perfil.');
-                
         }
     }
 
@@ -201,11 +197,11 @@ class PerfilController extends Controller
 
     public function actionDelete()
     {
-            
+
         $model =  Perfil::find()->where(['user_id' => Yii::$app->user->identity->id])->one();
-                
+
         $this->findModel($model->id)->delete();
-            
+
         return $this->redirect(['site/index']);
     }
 

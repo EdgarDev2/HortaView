@@ -11,6 +11,7 @@ use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use common\models\LoginForm;
+use frontend\models\CicloSiembra;
 use frontend\models\PasswordResetRequestForm;
 use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
@@ -75,8 +76,49 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
+        // Obtener los ciclos desde la base de datos
+        $ciclos = CicloSiembra::find()
+            ->select(['cicloId', 'descripcion', 'ciclo']) // Seleccionar columnas específicas
+            ->orderBy(['ciclo' => SORT_ASC]) // Ordenar por el campo 'ciclo'
+            ->asArray() // Convertir el resultado a un array
+            ->all();
+
+        // Verificar si no hay ciclos disponibles
+        if (empty($ciclos)) {
+            Yii::$app->session->setFlash('error', 'No hay ciclos disponibles en este momento.');
+        }
+
+        // Pasar los ciclos al layout como variable global
+        Yii::$app->view->params['ciclos'] = $ciclos;
+
         return $this->render('index');
     }
+
+    public function actionChangeCiclo()
+    {
+        // Obtener el ID del ciclo desde la solicitud POST
+        $cicloId = Yii::$app->request->post('cicloId');
+
+        if ($cicloId) {
+            // Validar que el ciclo existe en la base de datos
+            $ciclo = CicloSiembra::findOne($cicloId);
+            if ($ciclo) {
+                // Guardar el ciclo seleccionado en la sesión
+                Yii::$app->session->set('cicloSeleccionado', $cicloId);
+                Yii::$app->session->setFlash('success', 'Ciclo seleccionado: ' . $ciclo->descripcion);
+            } else {
+                // Mensaje de error si el ciclo no existe
+                Yii::$app->session->setFlash('error', 'El ciclo seleccionado no es válido.');
+            }
+        } else {
+            Yii::$app->session->setFlash('error', 'No se envió un ciclo válido.');
+        }
+
+        // Redirigir a la página anterior o al índice
+        //return $this->redirect(Yii::$app->request->referrer ?: ['site/index']);
+        return $this->redirect(Yii::$app->request->referrer);
+    }
+
 
     /**
      * Logs in a user.

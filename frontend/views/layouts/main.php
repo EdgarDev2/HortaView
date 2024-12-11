@@ -9,6 +9,7 @@ use yii\bootstrap5\Breadcrumbs;
 use yii\bootstrap5\Html;
 use yii\bootstrap5\Nav;
 use yii\bootstrap5\NavBar;
+use yii\helpers\ArrayHelper;
 use yii\helpers\Url;
 
 AppAsset::register($this);
@@ -30,13 +31,45 @@ AppAsset::register($this);
 
     <header>
         <?php
+
         NavBar::begin([
-            'brandLabel' => Html::img('@web/images/house-fill-light.svg', ['alt' => Yii::$app->name]) . ' ' . 'HortaView',
-            'brandUrl' => Yii::$app->user->isGuest ? Yii::$app->homeUrl : ['/variables-ambientales/index'], // URL diferente según el estado de autenticación
+            'brandLabel' => Html::img('@web/images/house-fill-light.svg', ['alt' => Yii::$app->name]) . ' ' . 'HorView',
+            'brandUrl' => Yii::$app->user->isGuest ? Yii::$app->homeUrl : Url::to(['/variables-ambientales/index']), // URL diferente según el estado de autenticación
             'options' => [
                 'class' => 'navbar navbar-expand-md navbar-dark bg-success fixed-top',
             ],
         ]);
+
+
+        // Acceder a los ciclos pasados desde el controlador
+        $ciclos = Yii::$app->view->params['ciclos'] ?? []; // Si no hay ciclos, se asigna un array vacío
+        // Obtener el ciclo seleccionado de la sesión (si existe)
+        $cicloSeleccionado = Yii::$app->session->get('cicloSeleccionado');
+
+        // Crear las opciones del dropdown
+        $dropdownItems = [];
+        foreach ($ciclos as $ciclo) {
+            $dropdownItems[] = [
+                'label' =>  $ciclo['descripcion'],
+                'url' => ['site/change-ciclo'],  // Acción del controlador
+                'linkOptions' => [
+                    'data-method' => 'post',
+                    'data-params' => ['cicloId' => $ciclo['cicloId']],  // Enviar el cicloId
+                ],
+            ];
+        }
+
+        // Mostrar el ciclo seleccionado en la barra de navegación
+        $cicloDescripcion = '';
+        if ($cicloSeleccionado) {
+            // Buscar la descripción del ciclo seleccionado
+            foreach ($ciclos as $ciclo) {
+                if ($ciclo['cicloId'] == $cicloSeleccionado) {
+                    $cicloDescripcion = $ciclo['descripcion'];
+                    break;
+                }
+            }
+        }
 
         $menuItems = [];
 
@@ -47,6 +80,10 @@ AppAsset::register($this);
         } else {
             // Usuarios autenticados
             $menuItems = [
+                [
+                    'label' => $cicloSeleccionado ? $cicloDescripcion : 'Seleccionar Ciclo: ' . $cicloDescripcion,
+                    'items' => $dropdownItems,
+                ],
                 [
                     'label' => 'Tiempo real',
                     'items' => [ // Submenús
@@ -60,7 +97,7 @@ AppAsset::register($this);
                     'items' => [ // Submenús
                         ['label' => 'Humedad del suelo por día', 'url' => ['/filtrar-humedad-por-dia/index']],
                         ['label' => 'Humedad del suelo por rango', 'url' => ['/filtrar-humedad-por-rango/index']],
-                        ['label' => 'Humedad del suelo por ciclo', 'url' => ['/filtrar-humedad-por-ciclo/index']],
+                        //['label' => 'Humedad del suelo por ciclo', 'url' => ['/filtrar-humedad-por-ciclo/index']],
                     ],
                 ],
                 ['label' => 'Estadísticas generales', 'url' => ['/estadisticas-generales/index']],
@@ -73,7 +110,7 @@ AppAsset::register($this);
                         ['label' => 'Uso del agua (siguiente ciclo)', 'url' => ['/predicciones/largo-plazo']],
                     ],
                 ],
-                ['label' => 'Acerca de', 'url' => ['/site/about']],
+                //['label' => 'Acerca de', 'url' => ['/site/about']],
             ];
         }
 
@@ -83,12 +120,12 @@ AppAsset::register($this);
             'items' => $menuItems,
         ]);
 
+        // Bloque para iniciar sesión
         $currentUrl = Url::current();
         $defaultColor = '#A8D5BA';
         $activeColor = '#ffffff';
         $this->registerCss("a.custom-link:hover {color: #C5E1D4 !important;}");
 
-        // Bloque para iniciar sesión
         if (Yii::$app->user->isGuest) {
             $signupUrl = Url::to(['/site/signup']);
             $isSignupActive = $currentUrl === $signupUrl;
@@ -113,6 +150,7 @@ AppAsset::register($this);
         NavBar::end();
         ?>
     </header>
+
 
 
     <main role="main" class="flex-shrink-0">

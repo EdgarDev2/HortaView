@@ -2,6 +2,8 @@
 
 namespace frontend\controllers;
 
+use frontend\models\CicloSiembra;
+use Yii;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\web\Controller;
@@ -37,6 +39,40 @@ class TiempoRealHumedadSueloController extends Controller
     }
     public function actionIndex()
     {
-        return $this->render('index');
+        // Obtener los ciclos desde la base de datos
+        $ciclos = CicloSiembra::find()
+            ->select(['cicloId', 'descripcion', 'ciclo'])
+            ->orderBy(['ciclo' => SORT_ASC])
+            ->asArray()
+            ->all();
+
+        if (empty($ciclos)) {
+            Yii::$app->session->setFlash('error', 'No hay ciclos disponibles en este momento.');
+        }
+
+        // Pasar los ciclos al layout como variable global
+        Yii::$app->view->params['ciclos'] = $ciclos;
+
+        // Recuperar el ciclo seleccionado de la sesión
+        $cicloSeleccionado = Yii::$app->session->get('cicloSeleccionado');
+
+        // Obtener el ciclo correspondiente de la base de datos
+        $ciclo = CicloSiembra::findOne($cicloSeleccionado);  // Buscar el ciclo usando el ID seleccionado
+
+        if ($ciclo) {
+            // Obtener la fecha de inicio
+            $fechaInicio = $ciclo->fechaInicio;
+            $fechaFinal = $ciclo->fechaFin;
+        } else {
+            $fechaInicio = null;  // Si no se encuentra el ciclo, asignar null
+            $fechaFinal = null;
+        }
+
+        // Pasar la fecha y el ciclo a la vista
+        return $this->render('index', [
+            'cicloSeleccionado' => $cicloSeleccionado,
+            'fechaInicio' => $fechaInicio,  // Pasar la fecha de inicio a la vista
+            'fechaFin' => $fechaFinal,
+        ]);
     }
 }

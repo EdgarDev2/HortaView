@@ -2,6 +2,8 @@
 
 namespace frontend\controllers;
 
+use frontend\models\CicloSiembra;
+use Yii;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\web\Controller;
@@ -37,6 +39,20 @@ class TiempoRealTemperaturaAmbienteController extends Controller
     }
     public function actionIndex()
     {
+        // Obtener los ciclos desde la base de datos
+        $ciclos = CicloSiembra::find()
+            ->select(['cicloId', 'descripcion', 'ciclo']) // Seleccionar columnas específicas
+            ->orderBy(['ciclo' => SORT_ASC]) // Ordenar por el campo 'ciclo'
+            ->asArray() // Convertir el resultado a un array
+            ->all();
+
+        // Verificar si no hay ciclos disponibles
+        if (empty($ciclos)) {
+            Yii::$app->session->setFlash('error', 'No hay ciclos disponibles en este momento.');
+        }
+
+        // Pasar los ciclos al layout como variable global
+        Yii::$app->view->params['ciclos'] = $ciclos;
         return $this->render('index');
     }
 }
