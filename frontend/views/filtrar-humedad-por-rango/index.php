@@ -65,6 +65,13 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
             </div>
         </div>
     </div>
+    <!-- Pasamos los datos de la sesión a JS -->
+    <div id="data-container"
+        data-ciclo="<?= $cicloSeleccionado ?>"
+        data-fecha-inicio="<?= $fechaInicio ?>"
+        data-fecha-fin="<?= $fechaFin ?>">
+    </div>
+
 </div>
 
 <script>
@@ -260,9 +267,12 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
     });
 
     document.addEventListener('DOMContentLoaded', function() {
-        const fechaActual = obtenerFechaActual();
-        document.getElementById('fechaInicio').value = fechaActual;
-        document.getElementById('fechaFin').value = fechaActual;
+        //const fechaActual = obtenerFechaActual();
+        var dataContainer = document.getElementById('data-container');
+        var fechaInicioo = dataContainer.dataset.fechaInicio.split(' ')[0]; // Solo la fecha
+        var fechaFinn = dataContainer.dataset.fechaFin.split(' ')[0]; // Solo la fecha
+        document.getElementById('fechaInicio').value = fechaInicioo;
+        document.getElementById('fechaFin').value = fechaFinn;
 
         // Establecer cama predeterminada
         const camaIdPredeterminada = '1';

@@ -16,4 +16,8 @@ use yii\helpers\Html;
     <?php else: ?>
         <p>No se encontró la fecha de inicio para el ciclo seleccionado.</p>
     <?php endif; ?>
+    <div id="data-container"
+        data-ciclo="<?= $cicloSeleccionado ?>"
+        data-fecha-inicio="<?= $fechaInicio ?>" ">
+    </div>
 </div>
