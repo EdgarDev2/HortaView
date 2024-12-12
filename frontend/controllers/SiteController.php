@@ -105,7 +105,7 @@ class SiteController extends Controller
             if ($ciclo) {
                 // Guardar el ciclo seleccionado en la sesión
                 Yii::$app->session->set('cicloSeleccionado', $cicloId);
-                Yii::$app->session->setFlash('success', 'Ciclo seleccionado: ' . $ciclo->descripcion);
+                Yii::$app->session->setFlash('success', 'Se seleccionó: ' . $ciclo->descripcion);
             } else {
                 // Mensaje de error si el ciclo no existe
                 Yii::$app->session->setFlash('error', 'El ciclo seleccionado no es válido.');
