@@ -1,0 +1,20 @@
+/* Días de inicio y fin */
+.start-end-day {
+    background-color: #B3D4FC; /* Azul claro */
+    border-radius: 50%; /* Circular */
+    color: #000; /* Texto oscuro */
+    font-weight: bold; /* Negrita */
+}
+
+/* Días seleccionados en el rango */
+.selected-range-day {
+    background-color: #F1F5FB; /* Azul muy claro */
+    color: #000; /* Texto oscuro */
+    border-radius: 4px; /* Esquinas ligeramente redondeadas */
+}
+
+/* Día seleccionado (para casos específicos de Flatpickr) */
+.flatpickr-day.selected {
+    background-color: #4CAF50 !important; /* Verde oscuro */
+    color: white !important; /* Texto blanco */
+}

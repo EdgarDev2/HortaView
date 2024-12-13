@@ -1,0 +1,79 @@
+.body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f4f4f4;
+}
+
+.collage-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    /* Tamaño mínimo de 250px */
+    gap: 20px;
+    /* Incrementa el espacio entre las imágenes */
+    width: 90%;
+    max-width: 1400px;
+}
+
+.collage-container img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    object-fit: cover;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.collage-container img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    /* Más opaco para resaltar */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0.3s, opacity 0.3s;
+}
+
+.modal.active {
+    visibility: visible;
+    opacity: 1;
+}
+
+.modal img {
+    max-width: 95%;
+    max-height: 95%;
+    /* Mayor tamaño al ampliar */
+    border-radius: 10px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+    /* Sombra más fuerte */
+}
+
+.close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 30px;
+    color: white;
+    background: none;
+    border: none;
+    cursor: pointer;
+    outline: none;
+}
+
+.close-btn:hover {
+    color: red;
+}

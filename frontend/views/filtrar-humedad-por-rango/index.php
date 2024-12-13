@@ -38,11 +38,11 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
             <!-- Filtros de fecha -->
             <div class="<?= $cardInputDate ?>" style="max-width: 250px;">
                 <label for="fechaInicio" class="form-label mb-0 text-secondary">Fecha Inicio:</label>
-                <input type="date" id="fechaInicio" class="<?= $inputDate ?>" style="width: 140px; border: none;">
+                <input type="date" id="fechaInicio" class="<?= $inputDate ?>" style="width: 140px; border: none;" min="<?= $fechaInicio ?>" max="<?= $fechaFin ?>">
             </div>
-            <div class="<?= $cardInputDate ?>" style="max-width: 250px;">
+            <div class=" <?= $cardInputDate ?>" style="max-width: 250px;">
                 <label for="fechaFin" class="form-label mb-0 text-secondary">Fecha Fin:</label>
-                <input type="date" id="fechaFin" class="<?= $inputDate ?>" style="width: 140px; border: none;">
+                <input type="date" id="fechaFin" class="<?= $inputDate ?>" style="width: 140px; border: none;" min="<?= $fechaInicio ?>" max="<?= $fechaFin ?>">
             </div>
             <!-- Selector de cama -->
             <div class="input-group input-group-sm" style="max-width: 162px;">
@@ -217,11 +217,15 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
         });
     }
 
+    let dataContainer = document.getElementById('data-container');
+    let fechaInicioo = dataContainer.dataset.fechaInicio; // Solo la fecha
+    let fechaFinn = dataContainer.dataset.fechaFin; // Solo la fecha
+
     // Configuración para actualizar cada minuto
     function iniciarActualizacionAutomatica() {
         setInterval(() => {
-            const fechaInicio = document.getElementById('fechaInicio').value || obtenerFechaActual();
-            const fechaFin = document.getElementById('fechaFin').value || obtenerFechaActual();
+            const fechaInicio = document.getElementById('fechaInicio').value || fechaInicioo;
+            const fechaFin = document.getElementById('fechaFin').value || fechaFinn;
             const camaId = document.getElementById('camaId').value;
             cargarDatos(fechaInicio, fechaFin, camaId);
         }, 60000); // Cada 60,000 ms = 1 minuto
@@ -230,8 +234,8 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
     // Cambiar el tipo de gráfico
     function cambiarTipoGrafico(nuevoTipo) {
         tipoGrafico = nuevoTipo;
-        const fechaInicio = document.getElementById('fechaInicio').value || obtenerFechaActual();
-        const fechaFin = document.getElementById('fechaFin').value || obtenerFechaActual();
+        const fechaInicio = document.getElementById('fechaInicio').value || fechaInicioo;
+        const fechaFin = document.getElementById('fechaFin').value || fechaFinn;
         const camaId = document.getElementById('camaId').value;
 
         // Limpiar el canvas antes de redibujar
@@ -242,15 +246,6 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
 
         // Cargar los datos
         cargarDatos(fechaInicio, fechaFin, camaId);
-    }
-
-    // Obtener fecha actual en formato YYYY-MM-DD
-    function obtenerFechaActual() {
-        const hoy = new Date();
-        const year = hoy.getFullYear();
-        const month = String(hoy.getMonth() + 1).padStart(2, '0');
-        const day = String(hoy.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
     }
 
     // Configurar el botón de filtrar
@@ -267,19 +262,12 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
     });
 
     document.addEventListener('DOMContentLoaded', function() {
-        //const fechaActual = obtenerFechaActual();
-        var dataContainer = document.getElementById('data-container');
-        var fechaInicioo = dataContainer.dataset.fechaInicio.split(' ')[0]; // Solo la fecha
-        var fechaFinn = dataContainer.dataset.fechaFin.split(' ')[0]; // Solo la fecha
-        document.getElementById('fechaInicio').value = fechaInicioo;
-        document.getElementById('fechaFin').value = fechaFinn;
+        document.getElementById('fechaInicio').value = fechaInicioo || fechaActual;
+        document.getElementById('fechaFin').value = fechaFinn || fechaActual;
 
-        // Establecer cama predeterminada
         const camaIdPredeterminada = '1';
         document.getElementById('camaId').value = camaIdPredeterminada;
 
-        // Cargar datos automáticamente para la cama predeterminada
-        //cargarDatos(fechaActual, fechaActual, camaIdPredeterminada);
         $(document).ready(function() {
             setTimeout(clickbutton, 10);
 
@@ -287,7 +275,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                 $("#btnFiltrar").click();
             }
         });
-        iniciarActualizacionAutomatica(); // Inicia la actualización automática
+        iniciarActualizacionAutomatica();
     });
 
     // Función para descargar el gráfico

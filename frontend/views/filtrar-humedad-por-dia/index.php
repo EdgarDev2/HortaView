@@ -40,7 +40,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
             <!-- Filtros de fecha -->
             <div class="<?= $cardInputDate ?>" style="max-width: 250px;">
                 <label for="fechaInicio" class="form-label mb-0 text-secondary">Fecha Inicio:</label>
-                <input type="date" id="fechaInicio" class="<?= $inputDate ?>" style="width: 140px; border: none;">
+                <input type="date" id="fechaInicio" class="<?= $inputDate ?>" style="width: 140px; border: none;" min="<?= $fechaInicio ?>" max="<?= $fechaFin ?>">
             </div>
             <!-- Selector de cama -->
             <div class="input-group input-group-sm" style="max-width: 162px;">

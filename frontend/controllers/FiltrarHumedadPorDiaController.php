@@ -90,7 +90,31 @@ class FiltrarHumedadPorDiaController extends Controller
 
         // Pasar los ciclos al layout como variable global
         Yii::$app->view->params['ciclos'] = $ciclos;
-        return $this->render('index');
+        // Recuperar el ciclo seleccionado de la sesión
+        $cicloSeleccionado = Yii::$app->session->get('cicloSeleccionado');
+
+        // Obtener el ciclo correspondiente de la base de datos
+        $ciclo = CicloSiembra::findOne($cicloSeleccionado);  // Buscar el ciclo usando el ID seleccionado
+        date_default_timezone_set('America/Mexico_City');
+        $fechaActual = date('Y-m-d');
+        if ($ciclo) {
+            // Asignar fechas si el ciclo es encontrado
+            $fechaInicio = $ciclo->fechaInicio;
+            $fechaFinal = $ciclo->fechaFin;
+        } else {
+            // Asignar valores nulos en caso contrario
+            $fechaInicio = $fechaActual;
+            $fechaFinal = $fechaActual; // Usar la misma variable aquí
+        }
+        // Convierte la cadena fecha y hora 2024-02-29 00:00:00 a una marca de tiempo unix y formatea a YYYY-MM-DD
+        $fechaInicio = date('Y-m-d', strtotime($fechaInicio));
+        $fechaFinal = date('Y-m-d', strtotime($fechaFinal));
+        // Pasar la fecha y el ciclo a la vista
+        return $this->render('index', [
+            'cicloSeleccionado' => $cicloSeleccionado,
+            'fechaInicio' => $fechaInicio,  // Pasar la fecha de inicio a la vista
+            'fechaFin' => $fechaFinal,      // Asegurar consistencia aquí
+        ]);
     }
 
     public function actionSolicitud()
