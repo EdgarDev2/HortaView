@@ -58,6 +58,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
             <div>
                 <button id="btnFiltrar" class="btn btn-outline-primary btn-sm border-0 shadow-none">Filtrar datos</button>
             </div>
+            <?= Html::a('Ver todos los registros', ['/todos-registros-camas/index'], ['class' => 'btn btn-outline-primary btn-sm border-0']) ?>
         </div>
         <div class="chartCard">
             <div class="chartBox">
