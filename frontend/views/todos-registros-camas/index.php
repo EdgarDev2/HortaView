@@ -21,7 +21,7 @@ use yii\helpers\Html;
         <div class="col-md-12 d-flex flex-wrap align-items-center gap-2">
             <!-- Botones de tipo de gráfico -->
             <div class="btn-group" role="group" aria-label="Gráficos">
-                <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line')">
+                <!--<button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line')">
                     <i class="fas fa-chart-line"></i> Lineal
                 </button>
                 <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Barra" onclick="cambiarTipoGrafico('bar')">
@@ -29,9 +29,9 @@ use yii\helpers\Html;
                 </button>
                 <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Radar" onclick="cambiarTipoGrafico('radar')">
                     <i class="fas fa-chart-pie"></i> Radar
-                </button>
+                </button>-->
                 <button class="<?= $btnDownloadClass ?>" type="button" title="Descargar gráfico como imagen" onclick="descargarImagen('graficoCama', 'grafico_cama.png')">
-                    <i class="fas fa-download"></i> Descargar
+                    <i class="fas fa-download"></i> Descargar img del gráfico
                 </button>
             </div>
             <!-- Filtros de fecha -->
@@ -73,3 +73,176 @@ use yii\helpers\Html;
     </div>
 
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+
+
+<script>
+    // Obtener fecha actual en formato YYYY-MM-DD
+    function obtenerFechaActual() {
+        const hoy = new Date();
+        const year = hoy.getFullYear();
+        const month = String(hoy.getMonth() + 1).padStart(2, '0');
+        const day = String(hoy.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        const fechaActual = obtenerFechaActual();
+        let dataContainer = document.getElementById('data-container');
+        let fechaInicioo = dataContainer.dataset.fechaInicio; // Solo la fecha
+        let fechaFinn = dataContainer.dataset.fechaFin; // Solo la fecha
+        document.getElementById('fechaInicio').value = fechaInicioo || fechaActual;
+        document.getElementById('fechaFin').value = fechaFinn || fechaActual;
+
+        const camaIdPredeterminada = '1';
+        document.getElementById('camaId').value = camaIdPredeterminada;
+
+        $(document).ready(function() {
+            setTimeout(clickbutton, 10);
+
+            function clickbutton() {
+                $("#btnFiltrar").click();
+            }
+        });
+    });
+    $('#btnFiltrar').on('click', function() {
+        const fechaInicio = $('#fechaInicio').val();
+        const fechaFin = $('#fechaFin').val();
+        const camaId = $('#camaId').val();
+
+        // Validación de campos
+        if (!camaId) {
+            alert('Por favor, selecciona una cama.');
+            return;
+        }
+
+        if (!fechaInicio || !fechaFin) {
+            alert('Por favor, selecciona ambas fechas.');
+            return;
+        }
+
+        if (new Date(fechaInicio) > new Date(fechaFin)) {
+            alert('La fecha de inicio no puede ser mayor que la fecha de fin.');
+            return;
+        }
+
+        // Realizar solicitud AJAX
+        $.ajax({
+            url: 'index.php?r=todos-registros-camas/solicitar',
+            type: 'POST',
+            data: {
+                camaId: camaId,
+                fechaInicio: fechaInicio,
+                fechaFin: fechaFin
+            },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    console.log('Datos filtrados:', response.data);
+
+                    // Actualizar gráfico
+                    actualizarGrafico(response.data);
+                } else {
+                    alert(response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error al filtrar los datos:', error);
+                alert('Ocurrió un error al filtrar los datos. Por favor, intenta nuevamente.');
+            }
+        });
+    });
+
+    // Función para actualizar el gráfico
+    function actualizarGrafico(datos) {
+        const etiquetas = datos.map(item => `${item.fecha} ${item.hora}`);
+        const humedades = datos.map(item => item.humedad);
+
+        const ctx = document.getElementById('graficoCama').getContext('2d');
+
+        // Verificar si el gráfico existe antes de intentar destruirlo
+        if (window.graficoCama && typeof window.graficoCama.destroy === 'function') {
+            window.graficoCama.destroy();
+        }
+
+        // Crear un nuevo gráfico
+        window.graficoCama = new Chart(ctx, {
+            type: 'line', // Cambiar el tipo de gráfico si es necesario
+            data: {
+                labels: etiquetas,
+                datasets: [{
+                    label: 'Humedad del Suelo',
+                    data: humedades,
+                    borderColor: '#4BC0C0',
+                    backgroundColor: 'rgba(75, 192, 192, 0.4)',
+                    borderWidth: 2,
+                    fill: false,
+                }],
+            },
+            options: {
+                animations: {
+                    tension: {
+                        duration: 4000,
+                        easing: 'linear', //easeOutBounce, easeInOut, easeInOutQuad,
+                        from: 1,
+                        to: 0,
+                        loop: true
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: false, // Mantiene la proporción de aspecto
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                        },
+                        title: {
+                            display: true,
+                            text: 'Horas',
+                        },
+                    },
+                    y: {
+                        min: 0,
+                        max: 100,
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 10,
+                        },
+                        title: {
+                            display: true,
+                            text: 'Humedad (%)',
+                        },
+                    },
+                },
+                plugins: {
+                    zoom: {
+                        pan: {
+                            enabled: true,
+                            mode: 'xy',
+                        },
+                        zoom: {
+                            wheel: {
+                                enabled: true,
+                            },
+                        },
+
+                    },
+                },
+            },
+        });
+    }
+
+    function descargarImagen(idCanvas, nombreArchivo) {
+        const canvas = document.getElementById(idCanvas);
+        const url = canvas.toDataURL('image/png'); // Convierte el gráfico a imagen en base64
+
+        // Crear un enlace temporal para descargar la imagen
+        const enlace = document.createElement('a');
+        enlace.href = url;
+        enlace.download = nombreArchivo; // Nombre del archivo que se descargará
+
+        // Simular el clic en el enlace para iniciar la descarga
+        enlace.click();
+    }
+</script>
