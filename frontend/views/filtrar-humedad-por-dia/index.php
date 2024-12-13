@@ -67,7 +67,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
 
 <script>
     let chart; // Variable global para el gráfico
-    let tipoGrafico = 'line'; // Tipo de gráfico inicial
+    let tipoGrafico = 'radar'; // Tipo de gráfico inicial
 
     // Función para inicializar el gráfico con zoom habilitado
     function inicializarGrafico(data) {
