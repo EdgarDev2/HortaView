@@ -13,16 +13,15 @@ use yii\helpers\Html;
             <?= Html::img(Yii::getAlias('@web') . '/images/evidencia4.jpeg', ['class' => 'img-fluid rounded', 'alt' => 'Evidencia4']) ?>
             <?= Html::img(Yii::getAlias('@web') . '/images/evidencia5.jpeg', ['class' => 'img-fluid rounded', 'alt' => 'Evidencia5']) ?>
             <?= Html::img(Yii::getAlias('@web') . '/images/evidencia6.jpeg', ['class' => 'img-fluid rounded', 'alt' => 'Evidencia6']) ?>
-            <?= Html::img(Yii::getAlias('@web') . '/images/evidencia1.jpeg', ['class' => 'img-fluid rounded', 'alt' => 'Evidencia1']) ?>
-            <?= Html::img(Yii::getAlias('@web') . '/images/evidencia2.jpeg', ['class' => 'img-fluid rounded', 'alt' => 'Evidencia2']) ?>
-            <?= Html::img(Yii::getAlias('@web') . '/images/evidencia12.jpeg', ['class' => 'img-fluid rounded', 'alt' => 'Evidencia12']) ?>
-            <?= Html::img(Yii::getAlias('@web') . '/images/evidencia15.jpeg', ['class' => 'img-fluid rounded', 'alt' => 'Evidencia15']) ?>
             <?= Html::img(Yii::getAlias('@web') . '/images/evidencia11.jpeg', ['class' => 'img-fluid rounded', 'alt' => 'Evidencia11']) ?>
             <?= Html::img(Yii::getAlias('@web') . '/images/evidencia13.jpeg', ['class' => 'img-fluid rounded', 'alt' => 'Evidencia13']) ?>
             <?= Html::img(Yii::getAlias('@web') . '/images/evidencia14.jpeg', ['class' => 'img-fluid rounded', 'alt' => 'Evidencia14']) ?>
             <?= Html::img(Yii::getAlias('@web') . '/images/evidencia10.jpeg', ['class' => 'img-fluid rounded', 'alt' => 'Evidencia10']) ?>
+            <?= Html::img(Yii::getAlias('@web') . '/images/evidencia1.jpeg', ['class' => 'img-fluid rounded', 'alt' => 'Evidencia1']) ?>
+            <?= Html::img(Yii::getAlias('@web') . '/images/evidencia2.jpeg', ['class' => 'img-fluid rounded', 'alt' => 'Evidencia2']) ?>
+            <?= Html::img(Yii::getAlias('@web') . '/images/evidencia12.jpeg', ['class' => 'img-fluid rounded', 'alt' => 'Evidencia12']) ?>
+            <?= Html::img(Yii::getAlias('@web') . '/images/evidencia15.jpeg', ['class' => 'img-fluid rounded', 'alt' => 'Evidencia15']) ?>
             <?= Html::img(Yii::getAlias('@web') . '/images/evidencia10.jpeg', ['class' => 'img-fluid rounded', 'alt' => 'Evidencia10']) ?>
-
         </div>
     </div>
     <!-- Modal for showing the enlarged image -->
