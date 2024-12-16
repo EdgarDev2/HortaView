@@ -204,7 +204,7 @@ class PrediccionesController extends Controller
         $predicciones = [];
         $ultimoIndice = count($samples) - 1;
 
-        for ($i = 1; $i <= 100; $i++) {
+        for ($i = 1; $i <= 50; $i++) {
             $predicciones[] = $modelo->predict([$ultimoIndice + $i]);
         }
 
