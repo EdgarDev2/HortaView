@@ -13,6 +13,8 @@ use yii\filters\VerbFilter;
 use yii\web\Controller;
 use yii\web\Response;
 use Phpml\Regression\LeastSquares;
+use Phpml\Regression\SVR;
+use Phpml\SupportVectorMachine\Kernel;
 
 /**
  * frontend/views/predicciones/
@@ -105,18 +107,20 @@ class PrediccionesController extends Controller
 
     public function actionPredecir()
     {
+        // Formato de respuesta JSON.
         Yii::$app->response->format = Response::FORMAT_JSON;
 
+        // Recepción de datos por POST.
         $camaId = Yii::$app->request->post('camaId');
         $fechaInicio = Yii::$app->request->post('fechaInicio');
         $fechaFin = Yii::$app->request->post('fechaFin');
 
-        // Validar parámetros
+        // Validación de parámetros.
         if (!$camaId || !$fechaInicio || !$fechaFin) {
             return ['success' => false, 'message' => 'Faltan datos requeridos.'];
         }
 
-        // Validar y formatear fechas
+        // Formateo y validación de fechas.
         $fechaInicio = date('Y-m-d', strtotime($fechaInicio));
         $fechaFin = date('Y-m-d', strtotime($fechaFin));
 
@@ -124,10 +128,10 @@ class PrediccionesController extends Controller
             return ['success' => false, 'message' => 'La fecha de inicio no puede ser mayor que la fecha de fin.'];
         }
 
-        // Obtener el modelo correspondiente
+        // Obtención del modelo según el ID de la cama.
         $modelClass = $this->getModelByCamaId($camaId);
 
-        // Consultar promedios diarios
+        // Consulta de promedios diarios
         $promedios = $modelClass::find()
             ->select(['fecha', 'AVG(humedad) AS promedio_humedad'])
             ->where(['between', 'fecha', $fechaInicio, $fechaFin])
@@ -144,8 +148,9 @@ class PrediccionesController extends Controller
         $datos = array_column($promedios, 'promedio_humedad');
 
         // Llamar a la función de predicción
-        $predicciones = $this->predecirHumedad($datos);
+        $predicciones = $this->predecirHumedadd($datos);
 
+        //se ebvía la respuesta JSON.
         return [
             'success' => true,
             'datos_historicos' => $promedios,
@@ -154,7 +159,7 @@ class PrediccionesController extends Controller
     }
 
 
-    // Predecir humedad
+    // Predecir humedad por predicción lineal simple.
     private function predecirHumedad($datos)
     {
         $samples = [];
@@ -175,6 +180,31 @@ class PrediccionesController extends Controller
         $ultimoIndice = count($samples) - 1;
 
         for ($i = 1; $i <= 35; $i++) {
+            $predicciones[] = $modelo->predict([$ultimoIndice + $i]);
+        }
+
+        return $predicciones;
+    }
+    private function predecirHumedadd($datos)
+    {
+        $samples = [];
+        $targets = [];
+
+        // Preparar los datos de entrenamiento
+        foreach ($datos as $indice => $valor) {
+            $samples[] = [$indice];
+            $targets[] = $valor;
+        }
+
+        // Crear y entrenar el modelo usando SVR con Kernel RBF
+        $modelo = new SVR(Kernel::LINEAR);
+        $modelo->train($samples, $targets);
+
+        // Predicciones para los próximos 35 días
+        $predicciones = [];
+        $ultimoIndice = count($samples) - 1;
+
+        for ($i = 1; $i <= 100; $i++) {
             $predicciones[] = $modelo->predict([$ultimoIndice + $i]);
         }
 

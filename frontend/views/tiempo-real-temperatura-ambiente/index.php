@@ -15,7 +15,7 @@ $inputDate = 'form-control placeholder-wave bg-transparent text-secondary';
 $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light rounded';
 ?>
 
-<div class="filtrar-humedad-por-rango-index">
+<div class="tiempo-real-temperatura-ambiente-index">
     <h1 class="display-6 text-secondary text-left mb-3"><?= Html::encode($this->title) ?></h1>
     <div class="row">
         <!-- Botones de gráfico y filtros -->
