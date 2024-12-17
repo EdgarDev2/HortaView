@@ -22,7 +22,7 @@ use yii\helpers\Html;
         <div class="col-md-12 d-flex flex-wrap align-items-center gap-2">
             <!-- Botones de tipo de gráfico -->
             <div class="btn-group" role="group" aria-label="Gráficos">
-                <button class="<?= $btnDownloadClass ?>" type="button" title="Descargar gráfico como imagen" onclick="descargarImagen('graficoCama', 'grafico_cama.png')">
+                <button class="<?= $btnDownloadClass ?>" type="button" title="Descargar gráfico como imagen" onclick="descargarImagen('graficoPredicciones', 'grafico_cama.png')">
                     <i class="fas fa-download"></i> Descargar img del gráfico
                 </button>
             </div>
@@ -125,31 +125,16 @@ use yii\helpers\Html;
                         console.log('Datos históricos:', response.datos_historicos);
 
                         const datosHistoricos = response.datos_historicos;
+                        const prediccioness = response.predicciones;
 
                         // Procesar datos para regresión lineal
                         const fechas = datosHistoricos.map((_, index) => index);
                         const valores = datosHistoricos.map(d => parseFloat(d.promedio_humedad));
 
-                        const puntos = fechas.map((x, i) => [x, valores[i]]);
-
-                        // Se calcula la regresión lineal
-                        const regresion = linearRegression(puntos);
-                        const predecir = linearRegressionLine(regresion);
-
-                        console.log('Regresión:', regresion);
-
-                        // Generar predicciones para los próximos 30 días
-                        const predicciones = [];
-                        for (let i = fechas.length; i < fechas.length + 35; i++) {
-                            predicciones.push(predecir(i));
-                        }
-
-                        console.log('Predicciones:', predicciones);
-
                         // Datos para el gráfico
                         const labels = datosHistoricos.map(d => d.fecha);
                         const datosOriginales = valores;
-                        const datosPredichos = [...datosOriginales, ...predicciones];
+                        const datosPredichos = [...datosOriginales, ...prediccioness];
 
                         // Generar nuevas etiquetas dinámicas
                         const nuevasLabels = labels.slice();
@@ -254,4 +239,11 @@ use yii\helpers\Html;
             });
         });
     });
+    // Función para descargar el gráfico
+    window.descargarImagen = function(canvasId, nombreArchivo) {
+        let link = document.createElement('a');
+        link.href = document.getElementById(canvasId).toDataURL();
+        link.download = nombreArchivo;
+        link.click();
+    };
 </script>

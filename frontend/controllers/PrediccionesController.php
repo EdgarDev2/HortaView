@@ -143,11 +143,14 @@ class PrediccionesController extends Controller
         if (empty($promedios)) {
             return ['success' => false, 'message' => 'No se encontraron datos para el rango de fechas.'];
         }
+        $datos = array_column($promedios, 'promedio_humedad');
+        $predicciones = $this->predecirHumedadd($datos);
 
         //se ebvía la respuesta JSON.
         return [
             'success' => true,
             'datos_historicos' => $promedios,
+            'predicciones' => $predicciones,
         ];
     }
 
