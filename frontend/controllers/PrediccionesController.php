@@ -144,19 +144,13 @@ class PrediccionesController extends Controller
             return ['success' => false, 'message' => 'No se encontraron datos para el rango de fechas.'];
         }
 
-        // Preparar datos para predicción
-        $datos = array_column($promedios, 'promedio_humedad');
-
-        // Llamar a la función de predicción
-        $predicciones = $this->predecirHumedadd($datos);
-
         //se ebvía la respuesta JSON.
         return [
             'success' => true,
             'datos_historicos' => $promedios,
-            'predicciones' => $predicciones,
         ];
     }
+
 
 
     // Predecir humedad por predicción lineal simple.

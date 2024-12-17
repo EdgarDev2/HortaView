@@ -1,8 +1,9 @@
 <?php
-$this->title = 'Predicción de humedad';
+$this->title = 'Predicción de humedad de tierra';
 $this->registerCssFile('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js');
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js');
+$this->registerJsFile('https://cdnjs.cloudflare.com/ajax/libs/simple-statistics/7.8.0/simple-statistics.min.js');
 $this->registerCssFile('@web/css/chart_card.css');
 // Clases comunes bootstrap
 $btnClass = 'btn btn-outline-success btn-sm border-0 shadow-none';
@@ -64,13 +65,17 @@ use yii\helpers\Html;
     </div>
 
 </div>
+
+<!-- Para que trabajemos las peticiones AJAX -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script>
+<script type="module">
+    import {
+        linearRegression,
+        linearRegressionLine
+    } from 'https://cdn.jsdelivr.net/npm/simple-statistics@7.8.3/index.js';
     let chartInstance = null; // Variable global para almacenar la instancia del gráfico
+
     // Obtener fecha actual en formato YYYY-MM-DD
     function obtenerFechaActual() {
         const hoy = new Date();
@@ -106,22 +111,6 @@ use yii\helpers\Html;
             const fechaFin = $('#fechaFin').val();
             const camaId = $('#camaId').val();
 
-            // Validación de campos
-            if (!camaId) {
-                alert('Por favor, selecciona una cama.');
-                return;
-            }
-
-            if (!fechaInicio || !fechaFin) {
-                alert('Por favor, selecciona ambas fechas.');
-                return;
-            }
-
-            if (new Date(fechaInicio) > new Date(fechaFin)) {
-                alert('La fecha de inicio no puede ser mayor que la fecha de fin.');
-                return;
-            }
-
             // Realizar solicitud AJAX
             $.ajax({
                 url: 'index.php?r=predicciones/predecir',
@@ -134,24 +123,42 @@ use yii\helpers\Html;
                 dataType: 'json',
                 success: function(response) {
                     if (response.success) {
-                        console.log('Datos historicos:', response.datos_historicos);
-                        console.log('Predicciones:', response.predicciones);
+                        console.log('Datos históricos:', response.datos_historicos);
 
-                        // Extraer las fechas y los valores de humedad
-                        const fechasHistoricas = response.datos_historicos.map(item => item.fecha);
-                        const humedadesHistoricas = response.datos_historicos.map(item => item.promedio_humedad);
+                        const datosHistoricos = response.datos_historicos;
 
-                        // Generar fechas futuras para las predicciones
-                        const fechasFuturas = [];
-                        const fechasInicio = new Date(fechasHistoricas[fechasHistoricas.length - 1]);
-                        for (let i = 1; i <= 30; i++) {
-                            const nuevaFecha = new Date(fechasInicio);
-                            nuevaFecha.setDate(nuevaFecha.getDate() + i);
-                            fechasFuturas.push(nuevaFecha.toISOString().split('T')[0]);
+                        // Procesar datos para regresión lineal
+                        const fechas = datosHistoricos.map((_, index) => index);
+                        const valores = datosHistoricos.map(d => parseFloat(d.promedio_humedad));
+
+                        const puntos = fechas.map((x, i) => [x, valores[i]]);
+
+                        // Se calcula la regresión lineal
+                        const regresion = linearRegression(puntos);
+                        const predecir = linearRegressionLine(regresion);
+
+                        console.log('Regresión:', regresion);
+
+                        // Generar predicciones para los próximos 30 días
+                        const predicciones = [];
+                        for (let i = fechas.length; i < fechas.length + 30; i++) {
+                            predicciones.push(predecir(i));
                         }
 
-                        // Obtener las predicciones (suponiendo que son un array de valores)
-                        const predicciones = response.predicciones;
+                        console.log('Predicciones:', predicciones);
+
+                        // Datos para el gráfico
+                        const labels = datosHistoricos.map(d => d.fecha);
+                        const datosOriginales = valores;
+                        const datosPredichos = [...datosOriginales, ...predicciones];
+
+                        // Generar nuevas etiquetas dinámicas
+                        const nuevasLabels = labels.slice();
+                        for (let i = 1; i <= 30; i++) {
+                            const fechaNueva = new Date(labels[labels.length - 1]);
+                            fechaNueva.setDate(fechaNueva.getDate() + i);
+                            nuevasLabels.push(fechaNueva.toISOString().split('T')[0]);
+                        }
 
                         // Verificar si el canvas existe
                         const ctx = document.getElementById('graficoPredicciones')?.getContext('2d');
@@ -161,8 +168,78 @@ use yii\helpers\Html;
                                 chartInstance.destroy();
                             }
 
-                            // Llamar a la función para actualizar el gráfico
-                            chartInstance = actualizarGrafico(fechasHistoricas, humedadesHistoricas, fechasFuturas, predicciones, ctx);
+                            // Crear nuevo gráfico
+                            chartInstance = new Chart(ctx, {
+                                type: 'line',
+                                data: {
+                                    labels: nuevasLabels,
+                                    datasets: [{
+                                            label: 'Humedad Histórica',
+                                            data: datosOriginales,
+                                            borderColor: 'blue',
+                                            fill: false,
+                                        },
+                                        {
+                                            label: 'Humedad Predicha (30 días)',
+                                            data: datosPredichos,
+                                            borderColor: 'orange',
+                                            borderDash: [5, 5],
+                                            fill: false,
+                                        },
+                                    ],
+                                },
+                                options: {
+                                    animations: {
+                                        /*tension: {
+                                            duration: 4000,
+                                            easing: 'linear', //easeOutBounce, easeInOut, easeInOutQuad,
+                                            from: 1,
+                                            to: 0,
+                                            loop: true
+                                        }*/
+                                    },
+                                    responsive: true,
+                                    maintainAspectRatio: false, // Mantiene la proporción de aspecto
+                                    scales: {
+                                        x: {
+                                            beginAtZero: true,
+                                            ticks: {
+                                                stepSize: 1,
+                                            },
+                                            title: {
+                                                display: true,
+                                                text: 'Fechas',
+                                            },
+                                        },
+                                        y: {
+                                            min: 0,
+                                            max: 100,
+                                            beginAtZero: true,
+                                            ticks: {
+                                                stepSize: 10,
+                                            },
+                                            title: {
+                                                display: true,
+                                                text: 'Humedad (%)',
+                                            },
+                                        },
+                                    },
+                                    plugins: {
+                                        zoom: {
+                                            pan: {
+                                                enabled: true,
+                                                mode: 'xy',
+                                            },
+                                            zoom: {
+                                                wheel: {
+                                                    enabled: true,
+                                                },
+                                            },
+
+                                        },
+                                    },
+                                },
+                            });
                         } else {
                             console.error('El canvas no se encuentra disponible.');
                         }
@@ -177,86 +254,4 @@ use yii\helpers\Html;
             });
         });
     });
-
-    // Función para actualizar el gráfico con datos históricos y predicciones
-    function actualizarGrafico(fechasHistoricas, humedadesHistoricas, fechasFuturas, predicciones, ctx) {
-        // Crear el gráfico
-        const chart = new Chart(ctx, {
-            type: 'line', // Tipo de gráfico (línea)
-            data: {
-                labels: [...fechasHistoricas, ...fechasFuturas], // Las fechas combinadas
-                datasets: [{
-                        label: 'Datos Históricos',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        data: [...humedadesHistoricas], // Datos históricos
-                        fill: true,
-                        borderWidth: 2
-                    },
-                    {
-                        label: 'Predicciones',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        data: [...predicciones], // Predicciones
-                        fill: true,
-                        borderWidth: 2,
-                        borderDash: [5, 5] // Línea discontinua para las predicciones
-                    }
-                ]
-            },
-            options: {
-                animations: {
-                    tension: {
-                        duration: 4000,
-                        easing: 'linear', //easeOutBounce, easeInOut, easeInOutQuad,
-                        from: 1,
-                        to: 0,
-                        loop: true
-                    }
-                },
-                responsive: true,
-                maintainAspectRatio: false, // Mantiene la proporción de aspecto
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1,
-                        },
-                        title: {
-                            display: true,
-                            text: 'Fechas',
-                        },
-                    },
-                    y: {
-                        min: 0,
-                        max: 100,
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 10,
-                        },
-                        title: {
-                            display: true,
-                            text: 'Humedad (%)',
-                        },
-                    },
-                },
-                plugins: {
-                    zoom: {
-                        pan: {
-                            enabled: true,
-                            mode: 'xy',
-                        },
-                        zoom: {
-                            wheel: {
-                                enabled: true,
-                            },
-                        },
-
-                    },
-                },
-            },
-        });
-
-        return chart;
-    }
 </script>
