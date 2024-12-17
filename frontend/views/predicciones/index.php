@@ -49,7 +49,6 @@ use yii\helpers\Html;
             <div>
                 <button id="btnFiltrar" class="btn btn-outline-primary btn-sm border-0 shadow-none">Filtrar datos</button>
             </div>
-            <?= Html::a('Regresar', ['/filtrar-humedad-por-rango/index'], ['class' => 'btn btn-outline-primary btn-sm border-0']) ?>
         </div>
         <div class="chartCard">
             <div class="chartBox">
@@ -141,7 +140,7 @@ use yii\helpers\Html;
 
                         // Generar predicciones para los próximos 30 días
                         const predicciones = [];
-                        for (let i = fechas.length; i < fechas.length + 30; i++) {
+                        for (let i = fechas.length; i < fechas.length + 35; i++) {
                             predicciones.push(predecir(i));
                         }
 
@@ -154,7 +153,7 @@ use yii\helpers\Html;
 
                         // Generar nuevas etiquetas dinámicas
                         const nuevasLabels = labels.slice();
-                        for (let i = 1; i <= 30; i++) {
+                        for (let i = 1; i <= 35; i++) {
                             const fechaNueva = new Date(labels[labels.length - 1]);
                             fechaNueva.setDate(fechaNueva.getDate() + i);
                             nuevasLabels.push(fechaNueva.toISOString().split('T')[0]);
@@ -180,10 +179,11 @@ use yii\helpers\Html;
                                             fill: false,
                                         },
                                         {
-                                            label: 'Humedad Predicha (30 días)',
+                                            label: 'Humedad Predicha (35 días)',
                                             data: datosPredichos,
                                             borderColor: 'orange',
                                             borderDash: [5, 5],
+                                            tension: 0.3,
                                             fill: false,
                                         },
                                     ],
@@ -192,7 +192,7 @@ use yii\helpers\Html;
                                     animations: {
                                         /*tension: {
                                             duration: 4000,
-                                            easing: 'linear', //easeOutBounce, easeInOut, easeInOutQuad,
+                                            easing: 'easeOutBounce', //easeOutBounce, easeInOut, easeInOutQuad,
                                             from: 1,
                                             to: 0,
                                             loop: true
