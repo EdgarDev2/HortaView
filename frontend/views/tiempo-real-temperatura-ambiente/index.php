@@ -2,7 +2,7 @@
 
 use yii\helpers\Html;
 
-$this->title = 'Temperatura ambiente';
+$this->title = 'Tiempo real temperatura ambiente';
 $this->registerCssFile('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js');
 $this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js');

@@ -80,8 +80,8 @@ class TiempoRealTemperaturaAmbienteController extends Controller
         // Pasar la fecha y el ciclo a la vista
         return $this->render('index', [
             'cicloSeleccionado' => $cicloSeleccionado,
-            'fechaMinima' => $fechaMinima,
-            'fechaMaxima' => $fechaMaxima,
+            'fechaMinima' => $fechaInicio,
+            'fechaMaxima' => $fechaFinal,
             //'fechaMinima' => $resultados['fecha_inicio'],  // Pasar la fecha de inicio a la vista
             //'fechaMaxima' => $resultados['fecha_final'],      // Asegurar consistencia aquí
         ]);
