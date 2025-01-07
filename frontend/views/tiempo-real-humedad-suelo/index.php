@@ -107,7 +107,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                         },
                         title: {
                             display: true,
-                            text: 'Horas',
+                            text: 'Horas de día',
                         },
                     },
                     y: {
@@ -119,7 +119,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                         },
                         title: {
                             display: true,
-                            text: 'Humedad (%)',
+                            text: '% de humedad del suelo Ka\'anche\'s, 1, 2, 3 y 4',
                         },
                     },
                 },

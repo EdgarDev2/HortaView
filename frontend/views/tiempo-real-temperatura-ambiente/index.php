@@ -58,6 +58,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
     </div>
 
 </div>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
 <script>
     let chart; // Variable global para el gráfico
     let tipoGrafico = 'line'; // Tipo de gráfico inicial
@@ -127,7 +128,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                         },
                         title: {
                             display: true,
-                            text: 'Horas',
+                            text: 'Horas de día',
                         },
                     },
                     y: {
@@ -139,25 +140,22 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                         },
                         title: {
                             display: true,
-                            text: 'Humedad (%)',
+                            text: '% de temperatura y humedad del ambiente',
                         },
                     },
                 },
                 plugins: {
                     zoom: {
+                        pan: {
+                            enabled: true,
+                            mode: 'xy',
+                        },
                         zoom: {
                             wheel: {
-                                enabled: true, // Habilitar zoom con rueda del ratón
-                                speed: 0.1, // Velocidad del zoom
-                            },
-                            pinch: {
-                                enabled: true, // Habilitar zoom con pinch
-                                threshold: 2, // Número de dedos para activar el zoom
-                            },
-                            drag: {
-                                enabled: true, // Habilitar desplazamiento
+                                enabled: true,
                             },
                         },
+
                     },
                 },
             },
