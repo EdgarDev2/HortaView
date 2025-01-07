@@ -21,7 +21,7 @@ class PresionBarometrica extends ActiveRecord
      */
     public static function tableName()
     {
-        return 'presion_barometrica'; // Cambiar si el nombre de la tabla es diferente
+        return 'presionbarometrica'; // Cambiar si el nombre de la tabla es diferente
     }
 
     /**
