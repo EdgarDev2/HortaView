@@ -80,7 +80,7 @@ class SiteController extends Controller
         $ciclos = CicloSiembra::find()
             ->select(['cicloId', 'descripcion', 'ciclo']) // Seleccionar columnas específicas
             ->orderBy(['ciclo' => SORT_ASC]) // Ordenar por el campo 'ciclo'
-            ->asArray() // Convertir el resultado a un array
+            ->asArray()
             ->all();
 
         // Verificar si no hay ciclos disponibles
@@ -88,7 +88,7 @@ class SiteController extends Controller
             Yii::$app->session->setFlash('error', 'No hay ciclos disponibles en este momento.');
         }
 
-        // Pasar los ciclos al layout como variable global
+        // Pasar los ciclos a la vista layout como variable global
         Yii::$app->view->params['ciclos'] = $ciclos;
 
         return $this->render('index');
@@ -107,7 +107,6 @@ class SiteController extends Controller
                 Yii::$app->session->set('cicloSeleccionado', $cicloId);
                 Yii::$app->session->setFlash('success', 'Se seleccionó: ' . $ciclo->descripcion);
             } else {
-                // Mensaje de error si el ciclo no existe
                 Yii::$app->session->setFlash('error', 'El ciclo seleccionado no es válido.');
             }
         } else {
