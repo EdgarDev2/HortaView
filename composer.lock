@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "0ddf7e522990a1a0598f1fff4faf0198",
+    "content-hash": "113b0f16d5ce8e7d9911a074d988c8e4",
     "packages": [
         {
             "name": "bower-asset/bootstrap",
@@ -519,6 +519,55 @@
                 "pattern recognition"
             ],
             "time": "2022-11-09T09:25:29+00:00"
+        },
+        {
+            "name": "practically/yii2-chartjs",
+            "version": "1.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Practically/yii2-chartjs.git",
+                "reference": "7e18358e6af76f38941dfbae981ab95e67aebf51"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Practically/yii2-chartjs/zipball/7e18358e6af76f38941dfbae981ab95e67aebf51",
+                "reference": "7e18358e6af76f38941dfbae981ab95e67aebf51",
+                "shasum": ""
+            },
+            "require": {
+                "yiisoft/yii2": "^2.0"
+            },
+            "require-dev": {
+                "bower-asset/chart-js": "^2.7 || ^4.0",
+                "squizlabs/php_codesniffer": "^3.5",
+                "symfony/phpunit-bridge": "^6.0",
+                "vimeo/psalm": "^4.10 || ^5.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "practically\\chartjs\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "authors": [
+                {
+                    "name": "Ade Attwood",
+                    "email": "ade@practically.io",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Neil Davies",
+                    "email": "neil@practically.io",
+                    "role": "Contributor"
+                }
+            ],
+            "description": "Chart js wrapper for yii2 to help with rendering data charts",
+            "support": {
+                "issues": "https://github.com/Practically/yii2-chartjs/issues",
+                "source": "https://github.com/Practically/yii2-chartjs/tree/v1.5.0"
+            },
+            "time": "2024-10-23T17:27:37+00:00"
         },
         {
             "name": "psr/container",

@@ -19,7 +19,8 @@
         "yiisoft/yii2-bootstrap5": "~2.0.2",
         "yiisoft/yii2-symfonymailer": "~2.0.3",
         "fortawesome/font-awesome": "4.2.0",
-        "php-ai/php-ml": "^0.10.0"
+        "php-ai/php-ml": "^0.10.0",
+        "practically/yii2-chartjs": "^1.5"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.1.0",
