@@ -74,44 +74,51 @@ class TiempoRealTemperaturaAmbienteController extends Controller
         // Convierte la cadena fecha y hora 2024-02-29 00:00:00 a una marca de tiempo unix y formatea a YYYY-MM-DD
         $fechaInicio = date('Y-m-d', strtotime($fechaInicio));
         $fechaFinal = date('Y-m-d', strtotime($fechaFinal));
+        $fechaMinima = Temperatura::find()->min('fecha');
+        $fechaMaxima = Temperatura::find()->max('fecha');
+
         // Pasar la fecha y el ciclo a la vista
         return $this->render('index', [
             'cicloSeleccionado' => $cicloSeleccionado,
-            'fechaInicio' => $fechaInicio,  // Pasar la fecha de inicio a la vista
-            'fechaFin' => $fechaFinal,      // Asegurar consistencia aquí
+            'fechaMinima' => $fechaMinima,
+            'fechaMaxima' => $fechaMaxima,
+            //'fechaMinima' => $resultados['fecha_inicio'],  // Pasar la fecha de inicio a la vista
+            //'fechaMaxima' => $resultados['fecha_final'],      // Asegurar consistencia aquí
         ]);
     }
 
-    public function actionObtenerTemperaturas()
+    public function actionAjax()
     {
-        Yii::$app->response->format = Response::FORMAT_JSON;
+        Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
-        // Obtener los parámetros de la solicitud
-        $fechainicio = Yii::$app->request->post('fechainicio');
-        $fechafin = Yii::$app->request->post('fechafin');
+        $fecha = Yii::$app->request->post('fecha'); // Recibe el parámetro de fecha desde el frontend
 
-        // Validar que ambos parámetros estén presentes
-        if (empty($fechainicio) || empty($fechafin)) {
-            return ['success' => false, 'message' => 'Faltan parámetros requeridos.'];
+        try {
+            // Obtener los datos de temperatura y humedad, filtrando por fecha si está presente
+            $resultados = $this->obtenerDatos($fecha);
+            return [
+                'success' => true,
+                'data' => $resultados,
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Error al procesar la solicitud: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    protected function obtenerDatos($fecha = null)
+    {
+        $query = Temperatura::find()
+            ->select(['temperatura', 'humedad', 'fecha', 'hora'])
+            ->orderBy(['fecha' => SORT_ASC, 'hora' => SORT_ASC]);
+
+        // Si se proporciona una fecha, se filtran los datos
+        if ($fecha) {
+            $query->where(['fecha' => $fecha]);
         }
 
-        // Convertir las fechas al formato compatible con MySQL (Y-m-d)
-        $fechainicio = date('Y-m-d', strtotime(str_replace('/', '-', $fechainicio)));
-        $fechafin = date('Y-m-d', strtotime(str_replace('/', '-', $fechafin)));
-
-        // Consultar las temperaturas entre las fechas proporcionadas
-        $datos = Temperatura::find()
-            ->select(['fecha', 'temperatura'])
-            ->where(['between', 'fecha', $fechainicio, $fechafin])
-            ->orderBy(['fecha' => SORT_ASC])
-            ->asArray()
-            ->all();
-
-        // Verificar si hay datos
-        if (empty($datos)) {
-            return ['success' => false, 'message' => 'No se encontraron datos para el rango de fechas especificado.'];
-        }
-
-        return ['success' => true, 'data' => $datos];
+        return $query->asArray()->all();
     }
 }

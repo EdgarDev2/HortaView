@@ -22,83 +22,220 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
         <div class="col-md-12 d-flex flex-wrap align-items-center gap-2">
             <!-- Botones de tipo de gráfico -->
             <div class="btn-group" role="group" aria-label="Gráficos">
-                <button class="<?= $btnDownloadClass ?>" type="button" title="Descargar gráfico como imagen" onclick="descargarImagen('graficoCama', 'grafico_cama.png')">
+                <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line')">
+                    <i class="fas fa-chart-line"></i> Lineal
+                </button>
+                <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Barra" onclick="cambiarTipoGrafico('bar')">
+                    <i class="fas fa-chart-bar"></i> Barra
+                </button>
+                <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Radar" onclick="cambiarTipoGrafico('radar')">
+                    <i class="fas fa-chart-pie"></i> Radar
+                </button>
+                <button class="<?= $btnDownloadClass ?>" type="button" title="Descargar gráfico como imagen" onclick="descargarImagen('graficoTemperatura', 'grafico_temperatura.png')">
                     <i class="fas fa-download"></i> Descargar
                 </button>
             </div>
-            <!-- Filtros de fecha -->
-            <div class="<?= $cardInputDate ?>" style="max-width: 250px;">
-                <label for="fechaInicio" class="form-label mb-0 text-secondary">Fecha Inicio:</label>
-                <input type="date" id="fechaInicio" class="<?= $inputDate ?>" style="width: 140px; border: none;" min="<?= $fechaInicio ?>" max="<?= $fechaFin ?>">
-            </div>
-            <div class=" <?= $cardInputDate ?>" style="max-width: 250px;">
-                <label for="fechaFin" class="form-label mb-0 text-secondary">Fecha Fin:</label>
-                <input type="date" id="fechaFin" class="<?= $inputDate ?>" style="width: 140px; border: none;" min="<?= $fechaInicio ?>" max="<?= $fechaFin ?>">
+            <!-- Filtro por fecha -->
+            <div class="<?= $cardInputDate ?>" style="max-width: 340px;">
+                <label for="fecha" class="form-label mb-0 text-secondary">Seleccionar Fecha:</label>
+                <input type="date" id="fecha" class="<?= $inputDate ?>" style="width: 140px; border: none;" min="<?= $fechaMinima ?>" max="<?= $fechaMaxima ?>">
             </div>
             <!-- Botón Filtrar -->
             <div>
                 <button id="btnFiltrar" class="btn btn-outline-primary btn-sm border-0 shadow-none">Filtrar datos</button>
             </div>
         </div>
-    </div>
-    <div class="chartCard">
-        <div class="chartBox">
-            <canvas id="graficoCama" class="mt-4"></canvas>
+        <div class="chartCard">
+            <div class="chartBox">
+                <canvas id="graficoTemperatura" class="mt-4"></canvas>
+            </div>
         </div>
     </div>
-</div>
-<!-- Pasamos los datos de la sesión a JS -->
-<div id="data-container"
-    data-ciclo="<?= $cicloSeleccionado ?>"
-    data-fecha-inicio="<?= $fechaInicio ?>"
-    data-fecha-fin="<?= $fechaFin ?>">
-</div>
-</div>
+    <!-- Pasamos los datos de la sesión a JS -->
+    <div id="data-container"
+        data-fecha-minima="<?= $fechaMinima ?>"
+        data-fecha-maxima="<?= $fechaMaxima ?>">
+    </div>
 
+</div>
 <script>
-    // Función para realizar la solicitud AJAX
-    function cargarDatos(fechaInicio, fechaFin) {
-        console.log('Datos enviados:', {
-            fechaInicio,
-            fechaFin,
-        });
-        $.ajax({
-            type: 'POST',
-            url: 'index.php?r=tiempo-real-temperatura-ambiente/obtener-temperaturas',
+    let chart; // Variable global para el gráfico
+    let tipoGrafico = 'line'; // Tipo de gráfico inicial
+
+    // Función para inicializar el gráfico
+    function inicializarGrafico(data) {
+        const ctx = document.getElementById('graficoTemperatura').getContext('2d');
+
+        if (chart) {
+            chart.destroy(); // Elimina el gráfico anterior si existe
+        }
+
+        chart = new Chart(ctx, {
+            type: tipoGrafico,
             data: {
-                fechaInicio,
-                fechaFin,
+                labels: data.labels, // Ejes X (horas o fechas)
+                datasets: [{
+                        label: 'Temperatura (°C)',
+                        data: data.temperatura,
+                        borderColor: '#FF6384',
+                        backgroundColor: 'rgba(255, 99, 132, 0.4)',
+                        fill: tipoGrafico === 'line' ? false : true,
+                        tension: 0.4,
+                        borderWidth: 2,
+                    },
+                    {
+                        label: 'Humedad (%)',
+                        data: data.humedad,
+                        borderColor: '#36A2EB',
+                        backgroundColor: 'rgba(54, 162, 235, 0.4)',
+                        fill: tipoGrafico === 'line' ? false : true,
+                        tension: 0.4,
+                        borderWidth: 2,
+                    },
+                ],
             },
-            success: function(response) {
-                if (response.success) {
-                    inicializarGrafico(response);
-                } else {
-                    alert(response.message || 'Error al cargar los datos.');
-                }
+            options: {
+                animations: {
+                    tension: {
+                        duration: 4000,
+                        easing: 'linear',
+                        from: 1,
+                        to: 0,
+                        loop: true
+                    }
+                },
+                responsive: true,
+                //maintainAspectRatio: false, // Permite ajustar el tamaño del gráfico
+                maintainAspectRatio: false, // Mantiene la proporción de aspecto
+                scales: tipoGrafico === 'radar' ? {
+                    r: {
+                        beginAtZero: true,
+                        min: 0,
+                        max: 100,
+                        ticks: {
+                            stepSize: 10,
+                        },
+                        angleLines: {
+                            borderDash: [0, 0, 0, 55, 250]
+                        },
+                    },
+                } : {
+                    x: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                        },
+                        title: {
+                            display: true,
+                            text: 'Horas',
+                        },
+                    },
+                    y: {
+                        min: 0,
+                        max: 100,
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 10,
+                        },
+                        title: {
+                            display: true,
+                            text: 'Humedad (%)',
+                        },
+                    },
+                },
+                plugins: {
+                    zoom: {
+                        zoom: {
+                            wheel: {
+                                enabled: true, // Habilitar zoom con rueda del ratón
+                                speed: 0.1, // Velocidad del zoom
+                            },
+                            pinch: {
+                                enabled: true, // Habilitar zoom con pinch
+                                threshold: 2, // Número de dedos para activar el zoom
+                            },
+                            drag: {
+                                enabled: true, // Habilitar desplazamiento
+                            },
+                        },
+                    },
+                },
             },
         });
     }
 
+    // Función para realizar la solicitud AJAX
+    function cargarDatos(fecha) {
+        $.ajax({
+            type: 'POST',
+            url: 'index.php?r=tiempo-real-temperatura-ambiente/ajax',
+            data: {
+                fecha
+            },
+            success: function(response) {
+                if (response.success) {
+                    const procesados = procesarDatos(response.data);
+                    inicializarGrafico(procesados);
+                } else {
+                    alert(response.message || 'Error al cargar los datos.');
+                }
+            },
+            error: function() {
+                alert('Error en la solicitud al servidor.');
+            },
+        });
+    }
+
+    // Procesar los datos obtenidos del servidor
+    function procesarDatos(datos) {
+        const labels = [];
+        const temperatura = [];
+        const humedad = [];
+
+        datos.forEach((dato) => {
+            labels.push(`${dato.hora}`); // Formato de hora
+            temperatura.push(dato.temperatura);
+            humedad.push(dato.humedad);
+        });
+
+        return {
+            labels,
+            temperatura,
+            humedad
+        };
+    }
+
+    // Cambiar el tipo de gráfico
+    function cambiarTipoGrafico(nuevoTipo) {
+        tipoGrafico = nuevoTipo;
+        const fecha = document.getElementById('fecha').value || null;
+        cargarDatos(fecha);
+    }
+
     // Configurar el botón de filtrar
     document.getElementById('btnFiltrar').addEventListener('click', function() {
-        const fechaInicio = document.getElementById('fechaInicio').value;
-        const fechaFin = document.getElementById('fechaFin').value;
+        const fecha = document.getElementById('fecha').value;
 
-        if (!fechaInicio || !fechaFin) {
-            alert('Por favor, completa todos los filtros.');
+        if (!fecha) {
+            alert('Por favor, selecciona una fecha.');
             return;
         }
-        cargarDatos(fechaInicio, fechaFin);
+
+        cargarDatos(fecha);
     });
 
+    // Descargar el gráfico como imagen
+    function descargarImagen(canvasId, nombreArchivo) {
+        const link = document.createElement('a');
+        link.href = document.getElementById(canvasId).toDataURL();
+        link.download = nombreArchivo;
+        link.click();
+    }
 
+    // Cargar datos al cargar la página
     document.addEventListener('DOMContentLoaded', function() {
-        let dataContainer = document.getElementById('data-container');
-        let desde = dataContainer.dataset.fechaInicio; // Solo la fecha
-        let hasta = dataContainer.dataset.fechaFin; // Solo la fecha
-        document.getElementById('fechaInicio').value = desde;
-        document.getElementById('fechaFin').value = hasta;
-
+        const fechaPredeterminada = document.getElementById('data-container').dataset.fechaMaxima;
+        document.getElementById('fecha').value = fechaPredeterminada;
         $(document).ready(function() {
             setTimeout(clickbutton, 10);
 
@@ -106,6 +243,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                 $("#btnFiltrar").click();
             }
         });
-        //iniciarActualizacionAutomatica();
+        iniciarActualizacionAutomatica();
+        cargarDatos(fechaPredeterminada);
     });
 </script>
