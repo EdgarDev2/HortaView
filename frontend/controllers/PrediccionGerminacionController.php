@@ -84,6 +84,8 @@ class PrediccionGerminacionController extends Controller
         $registros = RegistroGerminacion::find()
             ->select(['numeroZurcosGerminados', 'broteAlturaMaxima', 'linea', 'cultivoId', 'fechaRegistro'])
             ->where(['cultivoId' => array_column($cultivos, 'cultivoId')])
+            ->andWhere(['>=', 'fechaRegistro', $fechaInicio])
+            ->andWhere(['<=', 'fechaRegistro', $fechaFinal])
             ->orderBy(['fechaRegistro' => SORT_ASC])
             ->asArray()
             ->all();
@@ -105,6 +107,50 @@ class PrediccionGerminacionController extends Controller
             $prediccionesPorCultivo[$cultivoId] = $this->regresionSVRPorLinea($registros, $totalSurcosPosibles);
         }
 
+        // Obtener datos históricos de altura para cada cultivo
+        $datosHistoricos = [];
+        foreach ($registrosPorCultivo as $cultivoId => $registros) {
+            foreach ($registros as $registro) {
+                $linea = $registro['linea'];
+                if (!isset($datosHistoricos[$cultivoId])) {
+                    $datosHistoricos[$cultivoId] = [];
+                }
+                if (!isset($datosHistoricos[$cultivoId][$linea])) {
+                    $datosHistoricos[$cultivoId][$linea] = [
+                        'alturas' => [],
+                        'fechas' => [],
+                        'surcosGerminados' => 0,  // Contador de surcos germinados
+                        'totalSurcos' => 0,        // Total de surcos en la línea
+                    ];
+                }
+
+                // Agregar la altura máxima del brote y la fecha
+                $datosHistoricos[$cultivoId][$linea]['alturas'][] = $registro['broteAlturaMaxima'];
+                $datosHistoricos[$cultivoId][$linea]['fechas'][] = $registro['fechaRegistro'];
+
+                // Contabilizar si el surco está germinado (suponiendo que 'broteAlturaMaxima' mayor a 0 indica germinación)
+                if ($registro['broteAlturaMaxima'] > 0) {
+                    $datosHistoricos[$cultivoId][$linea]['surcosGerminados']++;
+                }
+
+                // Contabilizar el total de surcos (esto puede depender de la estructura de los datos, por ejemplo, si 'totalSurcos' es un dato fijo por línea)
+                $datosHistoricos[$cultivoId][$linea]['totalSurcos']++;
+            }
+        }
+
+        // Calcular el promedio de surcos germinados por línea
+        foreach ($datosHistoricos as $cultivoId => &$lineas) {
+            foreach ($lineas as $linea => &$data) {
+                if ($data['totalSurcos'] > 0) {
+                    // Calcular el promedio de surcos germinados
+                    $data['promedioSurcosGerminados'] = $data['surcosGerminados'] / $data['totalSurcos'];
+                } else {
+                    $data['promedioSurcosGerminados'] = 0;  // Si no hay surcos, el promedio es 0
+                }
+            }
+        }
+
+
         return $this->render('index', [
             'cicloSeleccionado' => $cicloSeleccionado,
             'fechaInicio' => $fechaInicio,
@@ -112,8 +158,10 @@ class PrediccionGerminacionController extends Controller
             'cultivos' => $cultivos,
             'registrosPorCultivo' => $registrosPorCultivo,
             'prediccionesPorCultivo' => $prediccionesPorCultivo,
+            'datosHistoricos' => $datosHistoricos, // Pasar los datos históricos a la vista
         ]);
     }
+
 
 
     /**
