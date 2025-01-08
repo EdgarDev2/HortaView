@@ -6,6 +6,7 @@ use frontend\models\CicloSiembra;
 use frontend\models\Cultivo;
 use frontend\models\LineaCultivo;
 use frontend\models\RegistroGerminacion;
+use frontend\models\Temperatura;
 use Yii;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
@@ -40,6 +41,7 @@ class PrediccionPesoProduccionFinalController extends Controller
             ],
         ];
     }
+
     public function actionIndex()
     {
         // Obtener los ciclos disponibles
@@ -77,13 +79,25 @@ class PrediccionPesoProduccionFinalController extends Controller
             ->asArray()
             ->all();
 
+        // Crear un índice para mapear cultivoId a nombreCultivo
+        $cultivoMap = array_column($cultivos, 'nombreCultivo', 'cultivoId');
+
         // Obtener los datos de lineacultivo
         $lineasCultivo = LineaCultivo::find()
             ->select(['numeroLinea', 'gramaje', 'cultivoId'])
             ->where(['cultivoId' => array_column($cultivos, 'cultivoId')])
-            ->orderBy(['numeroLinea' => SORT_ASC])
+            ->orderBy([
+                'cultivoId' => SORT_ASC, // Primero ordena por cultivoId
+                'numeroLinea' => SORT_ASC // Luego ordena por numeroLinea dentro de cada cultivoId
+            ])
             ->asArray()
             ->all();
+
+
+        // Asociar el nombre del cultivo a cada línea de cultivo
+        foreach ($lineasCultivo as &$linea) {
+            $linea['nombreCultivo'] = isset($cultivoMap[$linea['cultivoId']]) ? $cultivoMap[$linea['cultivoId']] : 'Desconocido';
+        }
 
         // Obtener registros de germinación
         $registros = RegistroGerminacion::find()
@@ -93,84 +107,79 @@ class PrediccionPesoProduccionFinalController extends Controller
             ->asArray()
             ->all();
 
-        // Agrupar las líneas de cultivo por camaId
-        $lineasPorCama = [];
+        // Obtener el promedio diario de temperatura y humedad dentro del rango del ciclo seleccionado
+        $promediosDiarios = Temperatura::find()
+            ->select([
+                'fecha',
+                'promedioTemperatura' => 'AVG(temperatura)',
+                'promedioHumedad' => 'AVG(humedad)',
+            ])
+            ->where(['between', 'fecha', $fechaInicio, $fechaFinal])
+            ->groupBy(['fecha'])
+            ->orderBy(['fecha' => SORT_ASC])
+            ->asArray()
+            ->all();
+
+        // Preparar las muestras para la predicción (ejemplo: gramaje, número de surcos germinados, etc.)
+        $samples = [];
+        $targets = [];
+
+        // Recopilación de datos para cada línea de cultivo (por cada cama y ciclo)
         foreach ($lineasCultivo as $linea) {
-            $lineasPorCama[$linea['cultivoId']][] = $linea;
+            $gramaje = floatval($linea['gramaje']);  // Asegúrate de que el gramaje sea un número
+            $promedioSurcosGerminados = 0;
+            $promedioAlturaBrote = 0;
+
+            // Filtrar los registros de germinación para la línea de cultivo actual
+            $registrosLinea = array_filter($registros, function ($registro) use ($linea) {
+                return $registro['cultivoId'] == $linea['cultivoId'];
+            });
+
+            // Calcular promedios para surcos germinados y altura de brote
+            $totalSurcos = 0;
+            $totalAltura = 0;
+            $totalRegistros = count($registrosLinea);
+
+            foreach ($registrosLinea as $registro) {
+                $totalSurcos += $registro['numeroZurcosGerminados'];
+                $totalAltura += $registro['broteAlturaMaxima'];
+            }
+
+            if ($totalRegistros > 0) {
+                $promedioSurcosGerminados = $totalSurcos / $totalRegistros;
+                $promedioAlturaBrote = $totalAltura / $totalRegistros;
+            }
+
+            // Almacenar las muestras y objetivos
+            $samples[] = [
+                $promedioSurcosGerminados,
+                $promedioAlturaBrote,
+                $gramaje
+            ];
+
+            // Usamos el gramaje como objetivo (peso de producción)
+            $targets[] = $gramaje;
         }
 
-        // Generar predicciones con SVR
-        $prediccionesGramaje = $this->prediccionGramajeSVR($lineasCultivo, $registros);
+        // Entrenar el modelo de predicción (SVR)
+        $regression = new SVR(Kernel::LINEAR);  // Usamos Kernel lineal
+        $regression->train($samples, $targets);
 
+        // Realizar la predicción para un nuevo conjunto de datos (por ejemplo, para un nuevo ciclo)
+        $predictions = [];
+        foreach ($samples as $sample) {
+            $predictions[] = $regression->predict($sample);
+        }
+
+        // Pasar los resultados a la vista
         return $this->render('index', [
             'cicloSeleccionado' => $cicloSeleccionado,
             'fechaInicio' => $fechaInicio,
             'fechaFin' => $fechaFinal,
-            'cultivos' => $cultivos,
-            'lineasPorCultivo' => $lineasCultivo, // Pasar datos de lineacultivo
-            'prediccionesGramaje' => $prediccionesGramaje,
-            'lineasPorCama' => $lineasPorCama,  // Agrupado por cama
+            'lineasCultivo' => $lineasCultivo,
+            'promediosDiarios' => $promediosDiarios,
+            'predictions' => $predictions,
+
         ]);
-    }
-
-
-    private function prediccionGramajeSVR($lineasCultivo, $registros)
-    {
-        // Agrupar registros por línea y cultivoId
-        $registrosAgrupados = [];
-        foreach ($registros as $registro) {
-            $linea = $registro['linea'];
-            $cultivoId = $registro['cultivoId'];
-            $clave = $cultivoId . '-' . $linea; // Clave única por cultivo y línea
-            if (!isset($registrosAgrupados[$clave])) {
-                $registrosAgrupados[$clave] = [];
-            }
-            $registrosAgrupados[$clave][] = $registro;
-        }
-
-        $predicciones = [];
-        foreach ($lineasCultivo as $lineaCultivo) {
-            $linea = $lineaCultivo['numeroLinea'];
-            $gramajeReal = $lineaCultivo['gramaje'];
-            $cultivoId = $lineaCultivo['cultivoId']; // Asegúrate de tener cultivoId
-            $clave = $cultivoId . '-' . $linea;
-
-            if (!isset($registrosAgrupados[$clave])) {
-                // Si no hay registros para esta línea y cultivo, saltar
-                continue;
-            }
-
-            // Preparar datos de entrenamiento
-            $samples = [];
-            $targets = [];
-            foreach ($registrosAgrupados[$clave] as $registro) {
-                $samples[] = [
-                    $registro['numeroZurcosGerminados'],
-                    $registro['broteAlturaMaxima']
-                ];
-                $targets[] = $gramajeReal;
-            }
-
-            // Crear y entrenar el modelo SVR
-            $regression = new SVR(Kernel::RBF); // Cambiar kernel según sea necesario
-            $regression->train($samples, $targets);
-
-            // Realizar predicción para la línea actual
-            $promedioZurcos = array_sum(array_column($registrosAgrupados[$clave], 'numeroZurcosGerminados')) / count($registrosAgrupados[$clave]);
-            $promedioAltura = array_sum(array_column($registrosAgrupados[$clave], 'broteAlturaMaxima')) / count($registrosAgrupados[$clave]);
-
-            $sampleGeneral = [$promedioZurcos, $promedioAltura];
-            $prediccion = $regression->predict($sampleGeneral);
-
-            // Guardar resultado con cultivoId
-            $predicciones[] = [
-                'cultivoId' => $cultivoId, // Asociar la predicción con el cultivoId
-                'linea' => $linea,
-                'prediccion' => round($prediccion, 2), // Redondear a 2 decimales
-                'gramaje_real' => $gramajeReal
-            ];
-        }
-
-        return $predicciones;
     }
 }
