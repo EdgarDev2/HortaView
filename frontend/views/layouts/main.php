@@ -100,7 +100,7 @@ AppAsset::register($this);
                         //['label' => 'Humedad del suelo por ciclo', 'url' => ['/filtrar-humedad-por-ciclo/index']],
                     ],
                 ],
-                ['label' => 'Estadísticas generales', 'url' => ['/estadisticas-generales/index']],
+                ['label' => 'Métricas de riego', 'url' => ['/estadisticas-generales/index']],
                 [
                     'label' => 'Predicciones',
                     'items' => [ // Submenús
