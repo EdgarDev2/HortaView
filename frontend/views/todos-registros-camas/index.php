@@ -21,7 +21,7 @@ use yii\helpers\Html;
         <div class="col-md-12 d-flex flex-wrap align-items-center gap-2">
             <!-- Botones de tipo de gráfico -->
             <div class="btn-group" role="group" aria-label="Gráficos">
-                <!--<button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line')">
+                <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line')">
                     <i class="fas fa-chart-line"></i> Lineal
                 </button>
                 <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Barra" onclick="cambiarTipoGrafico('bar')">
@@ -86,6 +86,7 @@ use yii\helpers\Html;
         const day = String(hoy.getDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
     }
+
     document.addEventListener('DOMContentLoaded', function() {
         const fechaActual = obtenerFechaActual();
         let dataContainer = document.getElementById('data-container');
@@ -105,6 +106,7 @@ use yii\helpers\Html;
             }
         });
     });
+
     $('#btnFiltrar').on('click', function() {
         const fechaInicio = $('#fechaInicio').val();
         const fechaFin = $('#fechaFin').val();
@@ -153,6 +155,9 @@ use yii\helpers\Html;
         });
     });
 
+    // Variable global para el tipo de gráfico
+    let tipoGrafico = 'line';
+
     // Función para actualizar el gráfico
     function actualizarGrafico(datos) {
         const etiquetas = datos.map(item => `${item.fecha} ${item.hora}`);
@@ -165,9 +170,9 @@ use yii\helpers\Html;
             window.graficoCama.destroy();
         }
 
-        // Crear un nuevo gráfico
+        // Crear un nuevo gráfico con el tipo dinámico
         window.graficoCama = new Chart(ctx, {
-            type: 'line', // Cambiar el tipo de gráfico si es necesario
+            type: tipoGrafico, // Usa la variable global para el tipo de gráfico
             data: {
                 labels: etiquetas,
                 datasets: [{
@@ -180,23 +185,10 @@ use yii\helpers\Html;
                 }],
             },
             options: {
-                animations: {
-                    tension: {
-                        duration: 4000,
-                        easing: 'linear', //easeOutBounce, easeInOut, easeInOutQuad,
-                        from: 1,
-                        to: 0,
-                        loop: true
-                    }
-                },
                 responsive: true,
-                maintainAspectRatio: false, // Mantiene la proporción de aspecto
+                maintainAspectRatio: false,
                 scales: {
                     x: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1,
-                        },
                         title: {
                             display: true,
                             text: 'Horas',
@@ -205,10 +197,6 @@ use yii\helpers\Html;
                     y: {
                         min: 0,
                         max: 100,
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 10,
-                        },
                         title: {
                             display: true,
                             text: 'Humedad (%)',
@@ -226,11 +214,16 @@ use yii\helpers\Html;
                                 enabled: true,
                             },
                         },
-
                     },
                 },
             },
         });
+    }
+
+    // Función para cambiar el tipo de gráfico
+    function cambiarTipoGrafico(nuevoTipo) {
+        tipoGrafico = nuevoTipo; // Actualiza el tipo de gráfico
+        $('#btnFiltrar').click(); // Vuelve a filtrar los datos y actualiza el gráfico
     }
 
     function descargarImagen(idCanvas, nombreArchivo) {
