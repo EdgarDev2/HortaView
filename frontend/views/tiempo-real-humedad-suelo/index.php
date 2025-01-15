@@ -19,41 +19,46 @@ $inputDate = 'form-control placeholder-wave bg-transparent text-secondary';
 $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light rounded';
 ?>
 <div class="tiempo-real-humeda-suelo-index">
-    <h1 class="display-6 text-secondary text-left mb-3"><?= Html::encode($this->title) ?></h1>
-    <div class="row">
-        <!-- Botones de gráfico y filtros -->
-        <div class="col-md-12 d-flex flex-wrap align-items-center gap-2">
-            <!-- Botones de tipo de gráfico -->
-            <div class="btn-group" role="group" aria-label="Gráficos">
-                <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line')">
-                    <i class="fas fa-chart-line"></i> Lineal
-                </button>
-                <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Barra" onclick="cambiarTipoGrafico('bar')">
-                    <i class="fas fa-chart-bar"></i> Barra
-                </button>
-                <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Radar" onclick="cambiarTipoGrafico('radar')">
-                    <i class="fas fa-chart-pie"></i> Radar
-                </button>
-                <button class="<?= $btnDownloadClass ?>" type="button" title="Descargar gráfico como imagen" onclick="descargarImagen('graficoHumedadSuelo', 'grafico_humedad_suelo.png')">
-                    <i class="fas fa-download"></i> Descargar
-                </button>
-            </div>
-            <!-- Filtro por fecha -->
-            <div class="<?= $cardInputDate ?>" style="max-width: 340px;">
-                <label for="fecha" class="form-label mb-0 text-secondary">Seleccionar Fecha:</label>
-                <input type="date" id="fecha" class="<?= $inputDate ?>" style="width: 140px; border: none;" min="<?= $fechaInicio ?>" max="<?= $fechaFin ?>">
-            </div>
-            <!-- Botón Filtrar -->
-            <div>
-                <button id="btnFiltrar" class="btn btn-outline-primary btn-sm border-0 shadow-none">Filtrar datos</button>
-            </div>
+    <!-- Mostrar el gráfico de predicciones vs valores reales -->
+    <div class="card mt-4">
+        <div class="card-header bg-warning text-dark">
+            <h4>Tiempo real humedad del suelo</h4>
         </div>
-        <div class="chartCard">
-            <div class="chartBox">
-                <canvas id="graficoHumedadSuelo" class="mt-4"></canvas>
+        <div class="row mt-4">
+            <!-- Botones de gráfico y filtros -->
+            <div class="col-md-12 d-flex flex-wrap align-items-center gap-2">
+                <!-- Botones de tipo de gráfico -->
+                <div class="btn-group" role="group" aria-label="Gráficos">
+                    <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line')">
+                        <i class="fas fa-chart-line"></i> Lineal
+                    </button>
+                    <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Barra" onclick="cambiarTipoGrafico('bar')">
+                        <i class="fas fa-chart-bar"></i> Barra
+                    </button>
+                    <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Radar" onclick="cambiarTipoGrafico('radar')">
+                        <i class="fas fa-chart-pie"></i> Radar
+                    </button>
+                    <button class="<?= $btnDownloadClass ?>" type="button" title="Descargar gráfico como imagen" onclick="descargarImagen('graficoHumedadSuelo', 'grafico_humedad_suelo.png')">
+                        <i class="fas fa-download"></i> Descargar
+                    </button>
+                </div>
+                <!-- Filtro por fecha -->
+                <div class="<?= $cardInputDate ?>" style="max-width: 340px;">
+                    <label for="fecha" class="form-label mb-0 text-secondary">Seleccionar Fecha:</label>
+                    <input type="date" id="fecha" class="<?= $inputDate ?>" style="width: 140px; border: none;" min="<?= $fechaInicio ?>" max="<?= $fechaFin ?>">
+                </div>
+                <!-- Botón Filtrar -->
+                <div>
+                    <button id="btnFiltrar" class="btn btn-outline-primary btn-sm border-0 shadow-none">Filtrar datos</button>
+                </div>
             </div>
+
+        </div>
+        <div class="card-body">
+            <canvas id="graficoHumedadSuelo" class="mt-4"></canvas>
         </div>
     </div>
+
     <!-- Pasamos los datos de la sesión a JS -->
     <div id="data-container"
         data-fecha-minima="<?= $fechaInicio ?>"

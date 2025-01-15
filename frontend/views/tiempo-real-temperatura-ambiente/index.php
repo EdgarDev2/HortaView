@@ -16,39 +16,42 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
 ?>
 
 <div class="tiempo-real-temperatura-ambiente-index">
-    <h1 class="display-6 text-secondary text-left mb-3"><?= Html::encode($this->title) ?></h1>
-    <div class="row">
-        <!-- Botones de gráfico y filtros -->
-        <div class="col-md-12 d-flex flex-wrap align-items-center gap-2">
-            <!-- Botones de tipo de gráfico -->
-            <div class="btn-group" role="group" aria-label="Gráficos">
-                <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line')">
-                    <i class="fas fa-chart-line"></i> Lineal
-                </button>
-                <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Barra" onclick="cambiarTipoGrafico('bar')">
-                    <i class="fas fa-chart-bar"></i> Barra
-                </button>
-                <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Radar" onclick="cambiarTipoGrafico('radar')">
-                    <i class="fas fa-chart-pie"></i> Radar
-                </button>
-                <button class="<?= $btnDownloadClass ?>" type="button" title="Descargar gráfico como imagen" onclick="descargarImagen('graficoTemperatura', 'grafico_temperatura.png')">
-                    <i class="fas fa-download"></i> Descargar
-                </button>
-            </div>
-            <!-- Filtro por fecha -->
-            <div class="<?= $cardInputDate ?>" style="max-width: 340px;">
-                <label for="fecha" class="form-label mb-0 text-secondary">Seleccionar Fecha:</label>
-                <input type="date" id="fecha" class="<?= $inputDate ?>" style="width: 140px; border: none;" min="<?= $fechaMinima ?>" max="<?= $fechaMaxima ?>">
-            </div>
-            <!-- Botón Filtrar -->
-            <div>
-                <button id="btnFiltrar" class="btn btn-outline-primary btn-sm border-0 shadow-none">Filtrar datos</button>
+    <!-- Mostrar el gráfico de predicciones vs valores reales -->
+    <div class="card mt-4">
+        <div class="card-header bg-warning text-dark">
+            <h4 class="text-dark">Tiempo real temperatura ambiente</h4>
+        </div>
+        <div class="row mt-4">
+            <!-- Botones de gráfico y filtros -->
+            <div class="col-md-12 d-flex flex-wrap align-items-center gap-2">
+                <!-- Botones de tipo de gráfico -->
+                <div class="btn-group" role="group" aria-label="Gráficos">
+                    <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line')">
+                        <i class="fas fa-chart-line"></i> Lineal
+                    </button>
+                    <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Barra" onclick="cambiarTipoGrafico('bar')">
+                        <i class="fas fa-chart-bar"></i> Barra
+                    </button>
+                    <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Radar" onclick="cambiarTipoGrafico('radar')">
+                        <i class="fas fa-chart-pie"></i> Radar
+                    </button>
+                    <button class="<?= $btnDownloadClass ?>" type="button" title="Descargar gráfico como imagen" onclick="descargarImagen('graficoTemperatura', 'grafico_temperatura.png')">
+                        <i class="fas fa-download"></i> Descargar
+                    </button>
+                </div>
+                <!-- Filtro por fecha -->
+                <div class="<?= $cardInputDate ?>" style="max-width: 340px;">
+                    <label for="fecha" class="form-label mb-0 text-secondary">Seleccionar Fecha:</label>
+                    <input type="date" id="fecha" class="<?= $inputDate ?>" style="width: 140px; border: none;" min="<?= $fechaMinima ?>" max="<?= $fechaMaxima ?>">
+                </div>
+                <!-- Botón Filtrar -->
+                <div>
+                    <button id="btnFiltrar" class="btn btn-outline-primary btn-sm border-0 shadow-none">Filtrar datos</button>
+                </div>
             </div>
         </div>
-        <div class="chartCard">
-            <div class="chartBox">
-                <canvas id="graficoTemperatura" class="mt-4"></canvas>
-            </div>
+        <div class="card-body">
+            <canvas id="graficoTemperatura" class="mt-4"></canvas>
         </div>
     </div>
     <!-- Pasamos los datos de la sesión a JS -->
