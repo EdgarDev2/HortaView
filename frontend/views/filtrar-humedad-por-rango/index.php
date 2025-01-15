@@ -95,7 +95,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                 }, (_, i) => i + ':00 hrs'), // Horas
                 datasets: [{
                         label: 'Mínimo',
-                        data: data.minimos,
+                        data: data.promedios_minimos,
                         borderColor: '#36A2EB',
                         backgroundColor: 'rgba(54, 162, 235, 0.4)',
                         fill: tipoGrafico === 'line' ? false : true,
@@ -113,7 +113,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                     },
                     {
                         label: 'Máximo',
-                        data: data.maximos,
+                        data: data.promedios_maximos,
                         borderColor: '#FF6384',
                         backgroundColor: 'rgba(255, 99, 132, 0.4)',
                         fill: tipoGrafico === 'line' ? false : true,
@@ -210,6 +210,9 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
             },
             success: function(response) {
                 if (response.success) {
+                    console.log('promedio de mínimos', response.promedios_minimos);
+                    console.log('promedio de máximos', response.promedios_maximos);
+                    console.log('promedio de promedio', response.promedios);
                     inicializarGrafico(response);
                 } else {
                     alert(response.message || 'Error al cargar los datos.');

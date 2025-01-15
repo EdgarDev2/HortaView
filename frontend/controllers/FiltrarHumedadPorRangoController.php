@@ -41,36 +41,65 @@ class FiltrarHumedadPorRangoController extends Controller
             ],
         ];
     }
+
     protected function obtenerDatosHumedad($modelClass, $fechaInicio, $fechaFin)
     {
+        // Consulta para obtener los datos agrupados por fecha y hora
         $data = $modelClass::find()
             ->select([
-                'HOUR(hora) as hora', // Extrae la hora
-                'AVG(humedad) as promedio_humedad', // Calcula el promedio general
-                'MAX(humedad) as max_humedad', // Máximo
-                'MIN(humedad) as min_humedad', // Mínimo
+                'DATE(fecha) as fecha',   // Extrae la fecha
+                'HOUR(hora) as hora',    // Extrae la hora
+                'AVG(humedad) as avg_humedad', // Promedio de humedad por hora y día
+                'MAX(humedad) as max_humedad', // Máximo por hora y día
+                'MIN(humedad) as min_humedad', // Mínimo por hora y día
             ])
             ->where(['between', 'fecha', $fechaInicio, $fechaFin]) // Filtra por rango de fechas
-            ->groupBy(['HOUR(hora)']) // Agrupa por hora
-            ->orderBy(['hora' => SORT_ASC]) // Ordena por hora
+            ->groupBy(['fecha', 'HOUR(hora)']) // Agrupa por fecha y hora
+            ->orderBy(['fecha' => SORT_ASC, 'hora' => SORT_ASC]) // Ordena por fecha y hora
             ->asArray()
             ->all();
 
-        $resultados = [
-            'promedios' => array_fill(0, 24, null),
-            'maximos' => array_fill(0, 24, null),
-            'minimos' => array_fill(0, 24, null),
-        ];
-
-        foreach ($data as $entry) {
-            $hora = (int)$entry['hora']; // Hora extraída
-            $resultados['promedios'][$hora] = (float)$entry['promedio_humedad'];
-            $resultados['maximos'][$hora] = (float)$entry['max_humedad'];
-            $resultados['minimos'][$hora] = (float)$entry['min_humedad'];
+        // Inicializa resultados intermedios
+        $resultadosPorHora = [];
+        foreach (range(0, 23) as $hora) {
+            $resultadosPorHora[$hora] = [
+                'max_humedad' => [],
+                'min_humedad' => [],
+                'avg_humedad' => []
+            ];
         }
 
-        return $resultados;
+        // Organiza los datos por hora
+        foreach ($data as $entry) {
+            $hora = (int)$entry['hora'];
+            $resultadosPorHora[$hora]['max_humedad'][] = (float)$entry['max_humedad'];
+            $resultadosPorHora[$hora]['min_humedad'][] = (float)$entry['min_humedad'];
+            $resultadosPorHora[$hora]['avg_humedad'][] = (float)$entry['avg_humedad'];
+        }
+
+        // Calcula promedios globales por hora
+        $resultadosFinales = [
+            'promedios_maximos' => array_fill(0, 24, null),
+            'promedios_minimos' => array_fill(0, 24, null),
+            'promedios_humedad' => array_fill(0, 24, null),
+        ];
+
+        foreach ($resultadosPorHora as $hora => $valores) {
+            if (!empty($valores['max_humedad'])) {
+                $resultadosFinales['promedios_maximos'][$hora] = array_sum($valores['max_humedad']) / count($valores['max_humedad']);
+            }
+            if (!empty($valores['min_humedad'])) {
+                $resultadosFinales['promedios_minimos'][$hora] = array_sum($valores['min_humedad']) / count($valores['min_humedad']);
+            }
+            if (!empty($valores['avg_humedad'])) {
+                $resultadosFinales['promedios_humedad'][$hora] = array_sum($valores['avg_humedad']) / count($valores['avg_humedad']);
+            }
+        }
+
+        return $resultadosFinales;
     }
+
+
 
     public function actionIndex()
     {
@@ -142,11 +171,12 @@ class FiltrarHumedadPorRangoController extends Controller
         try {
             // Obtener los datos de humedad
             $resultados = $this->obtenerDatosHumedad($modelClass, $fechaInicio, $fechaFin);
+
             return [
                 'success' => true,
-                'promedios' => $resultados['promedios'],
-                'maximos' => $resultados['maximos'],
-                'minimos' => $resultados['minimos'],
+                'promedios' => $resultados['promedios_humedad'], // Promedios generales por hora
+                'promedios_maximos' => $resultados['promedios_maximos'], // Promedios de máximos por hora
+                'promedios_minimos' => $resultados['promedios_minimos'], // Promedios de mínimos por hora
             ];
         } catch (\Exception $e) {
             return [
