@@ -29,7 +29,7 @@ use yii\helpers\Html;
                 </button>
                 <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Radar" onclick="cambiarTipoGrafico('radar')">
                     <i class="fas fa-chart-pie"></i> Radar
-                </button>-->
+                </button>
                 <button class="<?= $btnDownloadClass ?>" type="button" title="Descargar gráfico como imagen" onclick="descargarImagen('graficoCama', 'grafico_cama.png')">
                     <i class="fas fa-download"></i> Descargar img del gráfico
                 </button>
