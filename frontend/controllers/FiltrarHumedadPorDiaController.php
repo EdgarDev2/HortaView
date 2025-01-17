@@ -79,7 +79,7 @@ class FiltrarHumedadPorDiaController extends Controller
         }
 
         try {
-            $resultados = \common\components\DbHandler::obtenerMetricasHumedad($tablaCama, $fecha);
+            $resultados = DbHandler::obtenerMetricasHumedad($tablaCama, $fecha);
             return [
                 'success' => true,
                 'promedios' => $resultados['promedios'],

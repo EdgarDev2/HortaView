@@ -48,8 +48,8 @@ class TiempoRealTemperaturaAmbienteController extends Controller
 
         return $this->render('index', [
             'cicloSeleccionado' => $cicloSeleccionado,
-            'fechaInicio' => $fechaInicio,
-            'fechaFin' => $fechaFinal,
+            'fechaMinima' => $fechaInicio,
+            'fechaMaxima' => $fechaFinal,
         ]);
     }
 
