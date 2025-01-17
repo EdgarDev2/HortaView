@@ -17,7 +17,7 @@ $inputDate = 'form-control placeholder-wave bg-transparent text-secondary';
 $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light rounded';
 ?>
 
-<div class="filtrar-humedad-por-rango-index">
+<div class="filtrar-humedad-por-dia-index">
     <h1 class="display-6 text-secondary text-left mb-3"><?= Html::encode($this->title) ?></h1>
     <div class="row">
         <!-- Botones de gráfico y filtros -->
@@ -38,9 +38,9 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                 </button>
             </div>
             <!-- Filtros de fecha -->
-            <div class="<?= $cardInputDate ?>" style="max-width: 250px;">
-                <label for="fechaInicio" class="form-label mb-0 text-secondary">Fecha Inicio:</label>
-                <input type="date" id="fechaInicio" class="<?= $inputDate ?>" style="width: 140px; border: none;" min="<?= $fechaInicio ?>" max="<?= $fechaFin ?>">
+            <div class="<?= $cardInputDate ?>" style="max-width: 269px;">
+                <label for="selectFecha" class="form-label mb-0 text-secondary">Elija una fecha:</label>
+                <input type="date" id="selectFecha" class="<?= $inputDate ?>" style="width: 140px; border: none;" min="<?= $fechaInicio ?>" max="<?= $fechaFin ?>">
             </div>
             <!-- Selector de cama -->
             <div class="input-group input-group-sm" style="max-width: 162px;">
@@ -62,6 +62,12 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                 <canvas id="graficoCama" class="mt-4"></canvas>
             </div>
         </div>
+    </div>
+    <!-- Pasamos los datos de la sesión a JS -->
+    <div id="data-container"
+        data-ciclo="<?= $cicloSeleccionado ?>"
+        data-fecha-inicio="<?= $fechaInicio ?>"
+        data-fecha-fin="<?= $fechaFin ?>">
     </div>
 </div>
 
@@ -195,7 +201,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
 
         $.ajax({
             type: 'POST',
-            url: 'index.php?r=filtrar-humedad-por-dia/solicitud',
+            url: 'index.php?r=filtrar-humedad-por-dia/obtener-datos',
             data: {
                 fechaInicio,
                 camaId
@@ -210,10 +216,13 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
         });
     }
 
+    let dataContainer = document.getElementById('data-container');
+    let fechaFinn = dataContainer.dataset.fechaFin; // Solo la fecha
+
     // Configuración para actualizar cada minuto
     function iniciarActualizacionAutomatica() {
         setInterval(() => {
-            const fechaInicio = document.getElementById('fechaInicio').value || obtenerFechaActual();
+            const fechaInicio = document.getElementById('selectFecha').value || fechaFinn;
             const camaId = document.getElementById('camaId').value;
             cargarDatos(fechaInicio, camaId);
         }, 60000); // Cada 60,000 ms = 1 minuto
@@ -222,7 +231,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
     // Cambiar el tipo de gráfico
     function cambiarTipoGrafico(nuevoTipo) {
         tipoGrafico = nuevoTipo;
-        const fechaInicio = document.getElementById('fechaInicio').value || obtenerFechaActual();
+        const fechaInicio = document.getElementById('selectFecha').value || fechaFinn;
         const camaId = document.getElementById('camaId').value;
 
         // Limpiar el canvas antes de redibujar
@@ -235,18 +244,9 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
         cargarDatos(fechaInicio, camaId);
     }
 
-    // Obtener fecha actual en formato YYYY-MM-DD
-    function obtenerFechaActual() {
-        const hoy = new Date();
-        const year = hoy.getFullYear();
-        const month = String(hoy.getMonth() + 1).padStart(2, '0');
-        const day = String(hoy.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
     // Configurar el botón de filtrar
     document.getElementById('btnFiltrar').addEventListener('click', function() {
-        const fechaInicio = document.getElementById('fechaInicio').value;
+        const fechaInicio = document.getElementById('selectFecha').value || fechaFinn;
         const camaId = document.getElementById('camaId').value;
 
         if (!fechaInicio || !camaId) {
@@ -257,8 +257,8 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
     });
 
     document.addEventListener('DOMContentLoaded', function() {
-        const fechaActual = obtenerFechaActual();
-        document.getElementById('fechaInicio').value = fechaActual;
+        //const fechaActual = obtenerFechaActual();
+        document.getElementById('selectFecha').value = fechaFinn;
 
         // Establecer cama predeterminada
         const camaIdPredeterminada = '1';

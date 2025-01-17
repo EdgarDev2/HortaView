@@ -2,11 +2,11 @@
 
 namespace frontend\controllers;
 
-use frontend\models\CicloSiembra;
+//use frontend\models\CicloSiembra;
+use common\components\DbHandler;
 use frontend\models\Cultivo;
 use frontend\models\RiegoManual;
 use frontend\models\Valvula;
-use Yii;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\web\Controller;
@@ -42,34 +42,10 @@ class EstadisticasGeneralesController extends Controller
     }
     public function actionIndex()
     {
-        // Obtener los ciclos disponibles
-        $ciclos = CicloSiembra::find()
-            ->select(['cicloId', 'descripcion', 'ciclo'])
-            ->orderBy(['ciclo' => SORT_ASC])
-            ->asArray()
-            ->all();
-
-        if (empty($ciclos)) {
-            Yii::$app->session->setFlash('error', 'No hay ciclos disponibles en este momento.');
-        }
-
-        Yii::$app->view->params['ciclos'] = $ciclos;
-        $cicloSeleccionado = Yii::$app->session->get('cicloSeleccionado');
-        $ciclo = CicloSiembra::findOne($cicloSeleccionado);
-
-        date_default_timezone_set('America/Mexico_City');
-        $fechaActual = date('Y-m-d');
-
-        // Establecer las fechas de inicio y fin del ciclo
-        if ($ciclo) {
-            $fechaInicio = $ciclo->fechaInicio;
-            $fechaFinal = $ciclo->fechaFin;
-        } else {
-            $fechaInicio = $fechaActual;
-            $fechaFinal = $fechaActual;
-        }
-        $fechaInicio = date('Y-m-d', strtotime($fechaInicio));
-        $fechaFinal = date('Y-m-d', strtotime($fechaFinal));
+        $resultados = DbHandler::obtenerCicloYFechas();
+        $cicloSeleccionado = $resultados['cicloSeleccionado'];
+        $fechaInicio = $resultados['fechaInicio'];
+        $fechaFinal = $resultados['fechaFinal'];
 
         // Obtener cultivos asociados al ciclo seleccionado
         $cultivos = Cultivo::find()

@@ -40,24 +40,24 @@ AppAsset::register($this);
             ],
         ]);
 
+        // Acceder a los ciclos pasados desde el controlador actionIndex mediante DbHandler::obtenerCicloYFechas();
+        $ciclos = Yii::$app->view->params['ciclos'] ?? [];
 
-        // Acceder a los ciclos pasados desde el controlador
-        $ciclos = Yii::$app->view->params['ciclos'] ?? []; // Si no hay ciclos, se asigna un array vacío
-        // Obtener el ciclo seleccionado de la sesión (si existe)
-        $cicloSeleccionado = Yii::$app->session->get('cicloSeleccionado');
-
-        // Crear las opciones del dropdown
+        // Crear y mostrar las opciones del dropdown en el NvBar
         $dropdownItems = [];
         foreach ($ciclos as $ciclo) {
             $dropdownItems[] = [
                 'label' =>  $ciclo['descripcion'],
-                'url' => ['site/change-ciclo'],  // Acción del controlador
+                'url' => ['site/change-ciclo'],  // Acción del controlador que guarda en la sesión el ciclo seleccionado
                 'linkOptions' => [
                     'data-method' => 'post',
-                    'data-params' => ['cicloId' => $ciclo['cicloId']],  // Enviar el cicloId
+                    'data-params' => ['cicloId' => $ciclo['cicloId']],  // Enviar el cicloId seleccionado
                 ],
             ];
         }
+
+        // Obtener el ciclo seleccionado de la sesión (si existe)
+        $cicloSeleccionado = Yii::$app->session->get('cicloSeleccionado');
 
         // Mostrar el ciclo seleccionado en la barra de navegación
         $cicloDescripcion = '';

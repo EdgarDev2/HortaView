@@ -9,5 +9,8 @@ return [
         'cache' => [
             'class' => \yii\caching\FileCache::class,
         ],
+        'dbHandler' => [
+            'class' => 'common\components\DbHandler',
+        ],
     ],
 ];

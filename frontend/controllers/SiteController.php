@@ -11,11 +11,11 @@ use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use common\models\LoginForm;
-use frontend\models\CicloSiembra;
 use frontend\models\PasswordResetRequestForm;
 use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
 use frontend\models\ContactForm;
+use common\components\DbHandler;
 
 /**
  * Site controller
@@ -76,21 +76,7 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        // Obtener los ciclos desde la base de datos
-        $ciclos = CicloSiembra::find()
-            ->select(['cicloId', 'descripcion', 'ciclo']) // Seleccionar columnas específicas
-            ->orderBy(['ciclo' => SORT_ASC]) // Ordenar por el campo 'ciclo'
-            ->asArray()
-            ->all();
-
-        // Verificar si no hay ciclos disponibles
-        if (empty($ciclos)) {
-            Yii::$app->session->setFlash('error', 'No hay ciclos disponibles en este momento.');
-        }
-
-        // Pasar los ciclos a la vista layout como variable global
-        Yii::$app->view->params['ciclos'] = $ciclos;
-
+        DbHandler::obtenerCicloYFechas();
         return $this->render('index');
     }
 
@@ -99,23 +85,11 @@ class SiteController extends Controller
         // Obtener el ID del ciclo desde la solicitud POST
         $cicloId = Yii::$app->request->post('cicloId');
 
-        if ($cicloId) {
-            // Validar que el ciclo existe en la base de datos
-            $ciclo = CicloSiembra::findOne($cicloId);
-            if ($ciclo) {
-                // Guardar el ciclo seleccionado en la sesión
-                Yii::$app->session->set('cicloSeleccionado', $cicloId);
-                Yii::$app->session->setFlash('success', 'Se seleccionó: ' . $ciclo->descripcion);
-            } else {
-                Yii::$app->session->setFlash('error', 'El ciclo seleccionado no es válido.');
-            }
+        if (DbHandler::guardarCicloEnSesion($cicloId)) {
+            return $this->redirect(Yii::$app->request->referrer ?: ['site/index']);
         } else {
-            Yii::$app->session->setFlash('error', 'No se envió un ciclo válido.');
+            return $this->redirect(Yii::$app->request->referrer ?: ['site/index']);
         }
-
-        // Redirigir a la página anterior o al índice
-        //return $this->redirect(Yii::$app->request->referrer ?: ['site/index']);
-        return $this->redirect(Yii::$app->request->referrer);
     }
 
 

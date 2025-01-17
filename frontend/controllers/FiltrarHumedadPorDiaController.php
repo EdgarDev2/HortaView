@@ -2,11 +2,12 @@
 
 namespace frontend\controllers;
 
-use frontend\models\Cama1;
-use frontend\models\Cama2;
-use frontend\models\Cama3;
-use frontend\models\Cama4;
-use frontend\models\CicloSiembra;
+//use frontend\models\Cama1;
+//use frontend\models\Cama2;
+//use frontend\models\Cama3;
+//use frontend\models\Cama4;
+//use frontend\models\CicloSiembra;
+use common\components\DbHandler;
 use Yii;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
@@ -43,100 +44,42 @@ class FiltrarHumedadPorDiaController extends Controller
         ];
     }
 
-    protected function obtenerDatosHumedad($modelClass, $fecha)
-    {
-        $data = $modelClass::find()
-            ->select([
-                'HOUR(hora) as hora', // HOUR(hora) -> extrae la hora y alias "hora" se asigna a la expresión para referenciar el resultado de la consulta.
-                'AVG(humedad) as promedio_humedad',
-                'MAX(humedad) as max_humedad',
-                'MIN(humedad) as min_humedad',
-            ])
-            ->where(['fecha' => $fecha])
-            ->groupBy(['HOUR(hora)'])
-            ->orderBy(['hora' => SORT_ASC]) // hora es el alias que le dí a la columna HOUR(hora) dentro del select.
-            ->asArray()
-            ->all();
-
-        $resultados = [
-            'promedios' => array_fill(0, 24, null),
-            'maximos' => array_fill(0, 24, null),
-            'minimos' => array_fill(0, 24, null),
-        ];
-
-        foreach ($data as $entry) {
-            $hora = (int)$entry['hora']; // hora es el alias dentro del select.
-            $resultados['promedios'][$hora] = (float)$entry['promedio_humedad'];
-            $resultados['maximos'][$hora] = (float)$entry['max_humedad'];
-            $resultados['minimos'][$hora] = (float)$entry['min_humedad'];
-        }
-
-        return $resultados;
-    }
 
     public function actionIndex()
     {
-        // Obtener los ciclos desde la base de datos
-        $ciclos = CicloSiembra::find()
-            ->select(['cicloId', 'descripcion', 'ciclo']) // Seleccionar columnas específicas
-            ->orderBy(['ciclo' => SORT_ASC]) // Ordenar por el campo 'ciclo'
-            ->asArray() // Convertir el resultado a un array
-            ->all();
+        $resultados = DbHandler::obtenerCicloYFechas();
+        $cicloSeleccionado = $resultados['cicloSeleccionado'];
+        $fechaInicio = $resultados['fechaInicio'];
+        $fechaFinal = $resultados['fechaFinal'];
 
-        // Verificar si no hay ciclos disponibles
-        if (empty($ciclos)) {
-            Yii::$app->session->setFlash('error', 'No hay ciclos disponibles en este momento.');
-        }
-
-        // Pasar los ciclos al layout como variable global
-        Yii::$app->view->params['ciclos'] = $ciclos;
-        // Recuperar el ciclo seleccionado de la sesión
-        $cicloSeleccionado = Yii::$app->session->get('cicloSeleccionado');
-
-        // Obtener el ciclo correspondiente de la base de datos
-        $ciclo = CicloSiembra::findOne($cicloSeleccionado);  // Buscar el ciclo usando el ID seleccionado
-        date_default_timezone_set('America/Mexico_City');
-        $fechaActual = date('Y-m-d');
-        if ($ciclo) {
-            // Asignar fechas si el ciclo es encontrado
-            $fechaInicio = $ciclo->fechaInicio;
-            $fechaFinal = $ciclo->fechaFin;
-        } else {
-            // Asignar valores nulos en caso contrario
-            $fechaInicio = $fechaActual;
-            $fechaFinal = $fechaActual; // Usar la misma variable aquí
-        }
-        // Convierte la cadena fecha y hora 2024-02-29 00:00:00 a una marca de tiempo unix y formatea a YYYY-MM-DD
-        $fechaInicio = date('Y-m-d', strtotime($fechaInicio));
-        $fechaFinal = date('Y-m-d', strtotime($fechaFinal));
-        // Pasar la fecha y el ciclo a la vista
         return $this->render('index', [
             'cicloSeleccionado' => $cicloSeleccionado,
-            'fechaInicio' => $fechaInicio,  // Pasar la fecha de inicio a la vista
-            'fechaFin' => $fechaFinal,      // Asegurar consistencia aquí
+            'fechaInicio' => $fechaInicio,
+            'fechaFin' => $fechaFinal,
         ]);
     }
 
-    public function actionSolicitud()
+    public function actionObtenerDatos()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
         $fecha = Yii::$app->request->post('fechaInicio');
         $camaId = Yii::$app->request->post('camaId');
 
-        $modelClass = match ($camaId) {
-            '1' => Cama1::class,
-            '2' => Cama2::class,
-            '3' => Cama3::class,
-            '4' => Cama4::class,
+        $tablaCama = match ($camaId) {
+            '1' => 'cama1',
+            '2' => 'cama2',
+            '3' => 'cama3',
+            '4' => 'cama4',
             default => null,
         };
 
-        if ($modelClass === null || !strtotime($fecha)) {
+        if ($tablaCama === null || !strtotime($fecha)) {
             return ['success' => false, 'message' => 'Datos inválidos'];
         }
 
         try {
-            $resultados = $this->obtenerDatosHumedad($modelClass, $fecha);
+            $resultados = \common\components\DbHandler::obtenerMetricasHumedad($tablaCama, $fecha);
             return [
                 'success' => true,
                 'promedios' => $resultados['promedios'],
@@ -144,6 +87,7 @@ class FiltrarHumedadPorDiaController extends Controller
                 'minimos' => $resultados['minimos'],
             ];
         } catch (\Exception $e) {
+            Yii::error("Error en actionSolicitud: " . $e->getMessage(), __METHOD__);
             return ['success' => false, 'message' => 'Error al procesar la solicitud'];
         }
     }

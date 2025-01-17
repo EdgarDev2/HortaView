@@ -2,7 +2,8 @@
 
 namespace frontend\controllers;
 
-use frontend\models\CicloSiembra;
+use common\components\DbHandler;
+//use frontend\models\CicloSiembra;
 use frontend\models\RiegoManual;
 use frontend\models\Valvula;
 use Yii;
@@ -43,31 +44,16 @@ class UsoAguaSiguienteCicloController extends Controller
 
     public function actionIndex()
     {
-        // Obtener los ciclos disponibles
-        $ciclos = CicloSiembra::find()
-            ->select(['cicloId', 'descripcion', 'ciclo'])
-            ->orderBy(['ciclo' => SORT_ASC])
-            ->asArray()
-            ->all();
+        $resultados = DbHandler::obtenerCicloYFechas();
+        // $cicloSeleccionado = $resultados['cicloSeleccionado'];
+        $fechaInicio = $resultados['fechaInicio'];
+        $fechaFinal = $resultados['fechaFinal'];
 
-        if (empty($ciclos)) {
-            Yii::$app->session->setFlash('error', 'No hay ciclos disponibles en este momento.');
-        }
-
-        Yii::$app->view->params['ciclos'] = $ciclos;
-        $cicloSeleccionado = Yii::$app->session->get('cicloSeleccionado');
-
-        $ciclo = CicloSiembra::findOne($cicloSeleccionado);
-        date_default_timezone_set('America/Mexico_City');
-        $fechaActual = date('Y-m-d');
-
-        if ($ciclo) {
-            $fechaInicio = $ciclo->fechaInicio;
-            $fechaFinal = $ciclo->fechaFin;
-        } else {
-            $fechaInicio = $fechaActual;
-            $fechaFinal = $fechaActual;
-        }
+        /* return $this->render('index', [
+            'cicloSeleccionado' => $cicloSeleccionado,
+            'fechaInicio' => $fechaInicio,
+            'fechaFin' => $fechaFinal,
+        ]);*/
 
         // Obtener los volúmenes de las válvulas
         $volumenesValvula = Valvula::find()
