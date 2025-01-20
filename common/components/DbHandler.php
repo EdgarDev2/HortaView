@@ -122,4 +122,131 @@ class DbHandler
 
         return $resultados;
     }
+
+    public static function obtenerDatosPorCama($camaId, $segundoParametro)
+    {
+        // Construir la consulta SQL con parámetros dinámicos
+        $query = "
+            SELECT 
+                cs.descripcion AS ciclo,
+                cs.descripcion AS descripcionCiclo,
+                cs.fechaInicio AS fechaInicioCiclo,
+                cs.fechaFin AS fechaFinCiclo,
+                c.cultivoId AS cultivoId, -- Id a guardar
+                c.nombreCultivo AS cultivo,
+                c.tipoRiego AS tipoRiego,
+                c.gramaje AS gramajeCultivoTotal, -- Gramaje directo de la tabla cultivo
+                lc.numeroLinea AS linea,
+                lc.gramaje AS gramajeLinea
+            FROM ciclosiembra cs
+            LEFT JOIN cultivo c ON cs.cicloId = c.cicloId
+            LEFT JOIN lineacultivo lc ON c.cultivoId = lc.cultivoId
+            WHERE c.nombreCultivo = :camaId
+            AND (:segundoParametro = '' OR c.tipoRiego = :segundoParametro) -- Considerar el tipo de riego solo si se especifica
+            ORDER BY cs.fechaInicio, cs.cicloId, c.nombreCultivo, lc.numeroLinea;";
+
+        // Ejecutar la consulta con los parámetros
+        $datos = Yii::$app->db->createCommand($query, [
+            ':camaId' => $camaId,
+            ':segundoParametro' => $segundoParametro,
+        ])->queryAll();
+
+        // Organizar la información
+        $resultados = [];
+        foreach ($datos as $dato) {
+            $ciclo = $dato['ciclo'];
+            $cultivo = $dato['cultivo'];
+            $linea = $dato['linea'];
+            $gramaje = $dato['gramajeLinea'];
+
+            // Si alguno de los valores es NULL, no lo incluimos
+            if ($linea !== null && $gramaje !== null) {
+                // Crear entrada para el ciclo si no existe
+                if (!isset($resultados[$ciclo])) {
+                    $resultados[$ciclo] = [];
+                }
+
+                // Crear entrada para el cultivo si no existe
+                if (!isset($resultados[$ciclo][$cultivo])) {
+                    $resultados[$ciclo][$cultivo] = [];
+                }
+
+                // Añadir línea y su gramaje
+                $resultados[$ciclo][$cultivo][] = [
+                    'linea' => $linea,
+                    'gramaje' => $gramaje
+                ];
+            }
+        }
+
+        // Retornar los resultados organizados
+        return $resultados;
+    }
+
+
+
+
+    /*public static function obtenerGramajeCultivoTotal()
+    {
+        $query = "
+            SELECT 
+                cs.cicloId AS ciclo,
+                cs.descripcion AS descripcionCiclo,
+                cs.fechaInicio AS fechaInicioCiclo,
+                cs.fechaFin AS fechaFinCiclo,
+                c.cultivoId AS cultivoId, -- Id a guardar
+                c.nombreCultivo AS cultivo,
+                c.tipoRiego AS tipoRiego,
+                c.gramaje AS gramajeCultivoTotal, -- Gramaje directo de la tabla cultivo
+                lc.numeroLinea AS linea,
+                lc.gramaje AS gramajeLinea
+            FROM ciclosiembra cs
+            LEFT JOIN cultivo c ON cs.cicloId = c.cicloId
+            LEFT JOIN lineacultivo lc ON c.cultivoId = lc.cultivoId
+            ORDER BY cs.fechaInicio, cs.cicloId, c.nombreCultivo, lc.numeroLinea;
+        ";
+
+        return Yii::$app->db->createCommand($query)->queryAll();
+    }*/
+
+    public static function obtenerDatosConPrediccion()
+    {
+        /*// Obtener los datos históricos
+        $data = self::obtenerGramajeCultivoTotal();
+
+        $datosPorCama = [];
+        $prediccionesPorCama = [];
+
+        foreach ($data as $entry) {
+            $cama = $entry['ciclo'];
+            $linea = $entry['linea'];
+            $gramaje = (float)$entry['gramajeCultivoTotal'];
+            $diasTranscurridos = (strtotime($entry['fechaFinCiclo']) - strtotime($entry['fechaInicioCiclo'])) / (60 * 60 * 24);
+
+            $datosPorCama[$cama][$linea][] = [
+                'dias' => $diasTranscurridos,
+                'gramaje' => $gramaje,
+            ];
+        }
+
+        // Generar predicción para cada cama
+        foreach ($datosPorCama as $cama => $lineas) {
+            foreach ($lineas as $linea => $registros) {
+                // Usar el último dato histórico para predecir
+                $ultimoRegistro = end($registros);
+                $dias = $ultimoRegistro['dias'];
+                $gramaje = $ultimoRegistro['gramaje'];
+
+                // Predecir (esto es un ejemplo; usa tu lógica de predicción real)
+                $prediccion = $gramaje * 1.1; // Incremento estimado del 10%
+
+                $prediccionesPorCama[$cama][$linea] = [
+                    'dias' => $dias + 30, // Asume 30 días adicionales
+                    'gramaje' => $prediccion,
+                ];
+            }
+        }
+
+        return ['historicos' => $datosPorCama, 'predicciones' => $prediccionesPorCama];*/
+    }
 }
