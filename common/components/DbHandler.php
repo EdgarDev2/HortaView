@@ -2,10 +2,11 @@
 
 namespace common\components;
 
+use Phpml\Regression\LeastSquares;
 use Yii;
 
-use Phpml\Regression\SVR;
-use Phpml\SupportVectorMachine\Kernel;
+//use Phpml\Regression\SVR;
+//use Phpml\SupportVectorMachine\Kernel;
 
 class DbHandler
 {
@@ -126,7 +127,119 @@ class DbHandler
         return $resultados;
     }
 
-    public static function obtenerDatosPorCama($camaId, $segundoParametro)
+    public static function obtenerDatosPorCama($nombreCultivo, $tipoRiego)
+    {
+        // Construir la consulta SQL con los parámetros proporcionados
+        $query = "
+        SELECT 
+            cs.descripcion AS descripcionCiclo,
+            cs.ciclo AS numeroCiclo,
+            cs.fechaInicio AS inicioCiclo,
+            c.nombreCultivo,
+            c.tipoRiego,
+            lc.numeroLinea,
+            lc.gramaje
+        FROM ciclosiembra cs
+        LEFT JOIN cultivo c ON cs.cicloId = c.cicloId
+        LEFT JOIN lineacultivo lc ON c.cultivoId = lc.cultivoId
+        WHERE c.nombreCultivo = :nombreCultivo
+        AND c.tipoRiego = :tipoRiego
+        AND lc.numeroLinea IS NOT NULL
+        AND lc.gramaje IS NOT NULL
+        ORDER BY cs.fechaInicio, c.nombreCultivo ASC, lc.numeroLinea;
+        ";
+
+        // Ejecutar la consulta con los parámetros
+        $resultados = Yii::$app->db->createCommand($query, [
+            ':nombreCultivo' => $nombreCultivo,
+            ':tipoRiego' => $tipoRiego,
+        ])->queryAll();
+
+        // Organizar los datos por numeroLinea
+        $data = [];
+        foreach ($resultados as $row) {
+            $linea = 'Línea ' . $row['numeroLinea'];  // Formatear como 'Línea X'
+            $numeroCiclo = (int)$row['numeroCiclo'];
+            $gramaje = (int)$row['gramaje'];
+
+            // Inicializar la línea si no existe en el array $data
+            if (!isset($data[$linea])) {
+                $data[$linea] = [
+                    [],  // Ciclos
+                    [],  // Gramajes
+                ];
+            }
+
+            // Verificar si el ciclo ya existe en el array para esa línea
+            if (!in_array($numeroCiclo, $data[$linea][0])) {
+                // Agregar los datos del ciclo y gramaje en el array correspondiente
+                $data[$linea][0][] = $numeroCiclo;  // Ciclo
+                $data[$linea][1][] = $gramaje;     // Gramaje
+            }
+        }
+
+        // No rellenar ciclos faltantes. Devolver solo los ciclos existentes.
+        return $data;
+    }
+
+
+    public static function predecirPesoLineas($nombreCultivo, $tipoRiego)
+    {
+        // Obtener los datos organizados
+        $data = self::obtenerDatosPorCama($nombreCultivo, $tipoRiego);
+
+        $predicciones = [];
+
+        // Iterar sobre cada línea
+        foreach ($data as $line => [$samples, $targets]) {
+            // Validar que los datos sean correctos, que haya al menos 2 ciclos y que los targets no contengan valores nulos
+            if (count($samples) > 1 && count($samples) == count($targets)) {
+                // Filtrar los valores nulos tanto en samples como en targets
+                $validSamples = array_filter($samples, function ($ciclo, $index) use ($targets) {
+                    // Asegurarse de que tanto el ciclo (sample) como el gramaje (target) no sean nulos
+                    return $ciclo !== null && $targets[$index] !== null;
+                }, ARRAY_FILTER_USE_BOTH);
+
+                $validTargets = array_filter($targets, function ($target) {
+                    return $target !== null;
+                });
+
+                // Si después de filtrar quedan suficientes datos, proceder
+                if (count($validSamples) > 1 && count($validSamples) == count($validTargets)) {
+                    // Crear una nueva instancia de la regresión por mínimos cuadrados
+                    $regression = new LeastSquares();
+
+                    // Convertir las muestras a formato adecuado (matriz 2D)
+                    $validSamples = array_map(function ($ciclo) {
+                        return [$ciclo]; // Cada ciclo es una muestra individual
+                    }, $validSamples);
+
+                    // Entrenar el modelo con las muestras y los targets (gramajes)
+                    $regression->train($validSamples, $validTargets);
+
+                    // Predecir el gramaje para el ciclo 5
+                    $prediction = $regression->predict([[5]]); // Ciclo 5 como entrada
+
+                    // Guardar la predicción en el array
+                    $predicciones[$line] = round($prediction[0], 2);
+                } else {
+                    // Si no hay suficientes datos válidos, se asigna un valor nulo
+                    $predicciones[$line] = null;
+                }
+            } else {
+                // Si los datos no son válidos, se asigna un valor nulo
+                $predicciones[$line] = null;
+            }
+        }
+
+        return $predicciones;
+    }
+
+
+
+
+
+    /*public static function obtenerDatosPorCama($camaId, $segundoParametro)
     {
         // Construir la consulta SQL con parámetros dinámicos
         $query = "
@@ -180,10 +293,9 @@ class DbHandler
 
         // Retornar los resultados organizados
         return $resultados;
-    }
+    }*/
 
-
-    public static function predecirPesoLineas($camaId, $segundoParametro)
+    /*public static function predecirPesoLineas($camaId, $segundoParametro)
     {
         // Obtener los datos organizados
         $datos = self::obtenerDatosPorCama($camaId, $segundoParametro);
@@ -254,7 +366,7 @@ class DbHandler
         }
 
         return $resultados;
-    }
+    }*/
 
 
 

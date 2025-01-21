@@ -59,10 +59,15 @@ class PrediccionPesoProduccionFinalController extends Controller
     public function actionFiltrar()
     {
         if (Yii::$app->request->isAjax) {
+            // Obtener el ID de la cama desde la solicitud
             $camaId = Yii::$app->request->post('camaId');
+
+            // Verificar que el camaId no esté vacío
             if ($camaId) {
-                // Obtener el segundo parámetro según la cama
+                // Obtener el tipo de riego asociado a la cama
                 $tipoRiego = $this->obtenerTipoRiegoPorCama($camaId);
+
+                // Si no se encuentra el tipo de riego, devolver un error
                 if ($tipoRiego === null) {
                     Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
                     return [
@@ -76,13 +81,12 @@ class PrediccionPesoProduccionFinalController extends Controller
 
                 // Obtener las predicciones de peso para las líneas
                 $predicciones = DbHandler::predecirPesoLineas($camaId, $tipoRiego);
-
                 // Devolver los datos históricos y las predicciones en formato JSON
                 Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
                 return [
                     'success' => true,
                     'datos_historicos' => $datosHistoricos,
-                    'predicciones' => $predicciones,
+                    'predicciones' => $predicciones, // Aquí retornamos las predicciones organizadas por línea
                 ];
             }
         }
@@ -97,6 +101,7 @@ class PrediccionPesoProduccionFinalController extends Controller
 
     private function obtenerTipoRiegoPorCama($camaId)
     {
+        // Asegurarse de que los nombres de las camas coincidan con los valores del frontend
         $tiposRiego = [
             'Cama 1 cilantro automático' => 'Por goteo',
             'Cama 2 rábano automático' => 'Por aspersores',
@@ -104,6 +109,7 @@ class PrediccionPesoProduccionFinalController extends Controller
             'Cama 4 rábano manual' => '', // Cadena vacía
         ];
 
+        // Retorna el tipo de riego si existe la cama, si no retorna null
         return $tiposRiego[$camaId] ?? null;
     }
 }

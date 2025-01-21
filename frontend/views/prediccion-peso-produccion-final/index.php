@@ -39,7 +39,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                     </button>
                 </div>
                 <!-- Selector de cama -->
-                <div class="input-group input-group-sm" style="max-width: 162px;">
+                <div class="input-group input-group-sm" style="max-width: 226px;">
                     <select id="camaId" class="<?= $selectPlace ?>" title="Selecciona cama">
                         <option value="" disabled selected>Seleccionar cama</option>
                         <option value="Cama 1 cilantro automático">Cama 1 cilantro automático</option>
@@ -70,6 +70,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
             const selectCama = document.getElementById('camaId');
             let chartInstance = null;
 
+            // Función para destruir el gráfico actual
             function destruirGrafico() {
                 if (chartInstance) {
                     chartInstance.destroy();
@@ -78,7 +79,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
             }
 
             function cargarDatos(camaId) {
-                console.log('Cama seleccionada:', camaId);
+                console.log(camaId);
 
                 $.ajax({
                     type: 'POST',
@@ -86,114 +87,97 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                     data: {
                         camaId: camaId
                     },
+                    dataType: 'json',
                     success: function(response) {
                         if (response.success) {
-                            const datos = response.datos_historicos;
-                            const predicciones = response.predicciones;
-
-                            // Generar etiquetas del eje X con nombres de ciclos y predicción
-                            const ciclos = Object.keys(datos).map(ciclo => ciclo);
-                            ciclos.push('Predicción'); // Añadir "Predicción"
-
-                            console.log("Ciclos: ", ciclos);
-
-                            // Procesar datos históricos
-                            const lineas = {};
-                            Object.keys(datos).forEach(ciclo => {
-                                const cultivos = datos[ciclo];
-                                Object.values(cultivos).forEach(lineasCultivo => {
-                                    lineasCultivo.forEach(({
-                                        linea,
-                                        gramaje
-                                    }) => {
-                                        if (!lineas[linea]) {
-                                            lineas[linea] = [];
-                                        }
-                                        lineas[linea].push(gramaje);
-                                    });
-                                });
-                            });
-
-                            // Agregar las predicciones a las líneas
-                            predicciones.forEach(({
-                                linea,
-                                gramajePredicho
-                            }) => {
-                                if (!lineas[linea]) {
-                                    lineas[linea] = Array(ciclos.length - 1).fill(0); // Rellenar con ceros si no existían datos
-                                }
-                                lineas[linea].push(gramajePredicho); // Añadir predicción al final
-                            });
-
-                            // Configurar los datasets
-                            const datasets = [];
-                            const colores = ['#FF9F40', '#36A2EB', '#FFCD56', '#9966FF', '#4BC0C0'];
-                            let colorIndex = 0;
-
-                            Object.keys(lineas).forEach(linea => {
-                                const datosLinea = lineas[linea];
-                                datasets.push({
-                                    label: `Dato historico línea ${linea}`,
-                                    data: datosLinea,
-                                    backgroundColor: colores[colorIndex % colores.length],
-                                    borderColor: colores[colorIndex % colores.length],
-                                    borderWidth: 2,
-                                    fill: false,
-                                });
-                                colorIndex++;
-                            });
-
-                            // Destruir el gráfico anterior
+                            // Destruir el gráfico actual
                             destruirGrafico();
 
-                            // Crear el nuevo gráfico
+                            // Datos históricos por línea
+                            const datosHistoricos = response.datos_historicos;
+                            // Predicciones por línea
+                            const predicciones = response.predicciones;
+                            console.log(response.predicciones);
+                            // Preparar los datos para las gráficas
+                            const etiquetas = Object.keys(datosHistoricos); // Las líneas (Línea 1, Línea 2...)
+                            const datasets = [];
+
+                            // Preparar los datasets para cada línea
+                            etiquetas.forEach((linea) => {
+                                const datos = datosHistoricos[linea];
+                                const prediccion = predicciones[linea] ?? null;
+                                const ciclos = datos[0]; // Los ciclos están en el índice 0
+
+                                // Agregar los datos históricos (promedios, o lo que tengas)
+                                datasets.push({
+                                    label: "Datos históricos " + linea,
+                                    data: datos[1], // Los gramajes están en el índice 1
+                                    borderColor: '#36A2EB', // Color de la línea
+                                    backgroundColor: 'rgba(54, 162, 235, 0.2)', // Color del fondo
+                                    fill: false, // Rellenar bajo la curva
+                                    borderWidth: 2
+                                });
+
+                                // Agregar las predicciones (un solo valor, puede ser un punto)
+                                if (prediccion !== null) {
+                                    datasets.push({
+                                        label: "Predicción " + linea,
+                                        data: [...datos[1], prediccion], // Añadir el valor de la predicción al final de los datos históricos
+                                        borderColor: '#FF9F40', // Color de la línea de la predicción
+                                        backgroundColor: 'rgba(255, 159, 64, 0.2)', // Color del fondo de la predicción
+                                        fill: false, // No rellenar la curva de la predicción
+                                        borderWidth: 2,
+                                        pointRadius: 5, // Tamaño del punto para la predicción
+                                        pointBackgroundColor: '#FF9F40' // Color del punto de la predicción
+                                    });
+                                }
+                            });
+
+                            // Crear el gráfico
                             const ctx = document.getElementById('grafico-consolidado').getContext('2d');
                             chartInstance = new Chart(ctx, {
                                 type: 'line',
                                 data: {
-                                    labels: ciclos,
-                                    datasets: datasets,
+                                    labels: [...datosHistoricos['Línea 1'][0], 'Predicción'], // Las etiquetas X deben incluir los ciclos y el ciclo de predicción
+                                    datasets: datasets
                                 },
                                 options: {
                                     responsive: true,
                                     maintainAspectRatio: false,
-                                    plugins: {
-                                        legend: {
-                                            display: true,
-                                        },
-                                        title: {
-                                            display: true,
-                                            text: `Cama seleccionada: ${camaId}`
-                                        }
-                                    },
                                     scales: {
                                         x: {
                                             title: {
                                                 display: true,
-                                                text: 'Ciclos realizados'
+                                                text: 'Ciclos'
                                             }
                                         },
                                         y: {
-                                            beginAtZero: true,
                                             title: {
                                                 display: true,
-                                                text: 'Gramaje (kg) final por línea'
+                                                text: 'Gramaje (kg)'
                                             }
+                                        }
+                                    },
+                                    plugins: {
+                                        legend: {
+                                            position: 'top',
+                                        },
+                                        tooltip: {
+                                            mode: 'index',
+                                            intersect: false,
                                         }
                                     }
                                 }
                             });
-                        } else {
-                            alert(response.message || 'Error al cargar los datos.');
                         }
                     },
                     error: function(xhr, status, error) {
-                        console.error('Error en la solicitud:', error);
                         alert('Hubo un error al obtener los datos.');
                     }
                 });
             }
 
+            // Evento de click en el botón de filtrar
             btnFiltrar.addEventListener('click', function() {
                 const camaSeleccionada = selectCama.value;
 
