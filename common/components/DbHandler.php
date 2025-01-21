@@ -161,26 +161,30 @@ class DbHandler
             $linea = 'Línea ' . $row['numeroLinea'];  // Formatear como 'Línea X'
             $numeroCiclo = (int)$row['numeroCiclo'];
             $gramaje = (int)$row['gramaje'];
+            $descripcionCiclo = $row['descripcionCiclo'];
 
             // Inicializar la línea si no existe en el array $data
             if (!isset($data[$linea])) {
                 $data[$linea] = [
                     [],  // Ciclos
                     [],  // Gramajes
+                    []   // Descripciones
                 ];
             }
 
             // Verificar si el ciclo ya existe en el array para esa línea
             if (!in_array($numeroCiclo, $data[$linea][0])) {
-                // Agregar los datos del ciclo y gramaje en el array correspondiente
-                $data[$linea][0][] = $numeroCiclo;  // Ciclo
-                $data[$linea][1][] = $gramaje;     // Gramaje
+                // Agregar los datos del ciclo, gramaje y descripción en el array correspondiente
+                $data[$linea][0][] = $numeroCiclo;        // Ciclo
+                $data[$linea][1][] = $gramaje;           // Gramaje
+                $data[$linea][2][] = $descripcionCiclo;  // Descripción del ciclo
             }
         }
 
-        // No rellenar ciclos faltantes. Devolver solo los ciclos existentes.
+        // Devolver los datos organizados
         return $data;
     }
+
 
 
     public static function predecirPesoLineas($nombreCultivo, $tipoRiego)

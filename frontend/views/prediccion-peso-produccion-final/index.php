@@ -17,7 +17,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
 <div class="prediccion-peso-produccion-final-index">
     <div class="card mt-4">
         <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Peso de la producción final (siguiente ciclo).</h4>
+            <h4 class="mb-0">Peso final de la producción (siguiente ciclo).</h4>
         </div>
 
         <!-- Filtros y opciones de gráficos -->
@@ -88,49 +88,38 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                         camaId: camaId
                     },
                     dataType: 'json',
+
                     success: function(response) {
                         if (response.success) {
-                            // Destruir el gráfico actual
-                            destruirGrafico();
+                            destruirGrafico(); // Destruir el gráfico actual
 
-                            // Datos históricos por línea
-                            const datosHistoricos = response.datos_historicos;
-                            // Predicciones por línea
-                            const predicciones = response.predicciones;
+                            const datosHistoricos = response.datos_historicos; // Datos históricos por línea
+                            const predicciones = response.predicciones; // Predicciones por línea
                             console.log(response.predicciones);
-                            // Preparar los datos para las gráficas
-                            const etiquetas = Object.keys(datosHistoricos); // Las líneas (Línea 1, Línea 2...)
-                            const datasets = [];
 
-                            // Preparar los datasets para cada línea
-                            etiquetas.forEach((linea) => {
+                            const etiquetas = Object.keys(datosHistoricos);
+                            const datasets = [];
+                            const colores = ['#36A2EB', '#FF6384', '#4BC0C0', '#FF9F40', '#9966FF', '#FFCD56'];
+
+                            etiquetas.forEach((linea, index) => {
                                 const datos = datosHistoricos[linea];
                                 const prediccion = predicciones[linea] ?? null;
-                                const ciclos = datos[0]; // Los ciclos están en el índice 0
 
-                                // Agregar los datos históricos (promedios, o lo que tengas)
+                                // Combinar datos históricos con la predicción
+                                const datosCombinados = [...datos[1], prediccion];
+
+                                // Dataset único con puntos históricos y predicción conectados
                                 datasets.push({
-                                    label: "Datos históricos " + linea,
-                                    data: datos[1], // Los gramajes están en el índice 1
-                                    borderColor: '#36A2EB', // Color de la línea
-                                    backgroundColor: 'rgba(54, 162, 235, 0.2)', // Color del fondo
+                                    label: "" + linea,
+                                    data: datosCombinados,
+                                    borderColor: colores[index % colores.length], // Color de la línea
                                     fill: false, // Rellenar bajo la curva
-                                    borderWidth: 2
+                                    borderWidth: 2,
+                                    pointRadius: 4, // Tamaño del punto
+                                    pointBackgroundColor: datosCombinados.map((_, idx) =>
+                                        idx === datosCombinados.length - 1 ? '#FF9F40' : '#FFFFFF'
+                                    ), // Color del punto
                                 });
-
-                                // Agregar las predicciones (un solo valor, puede ser un punto)
-                                if (prediccion !== null) {
-                                    datasets.push({
-                                        label: "Predicción " + linea,
-                                        data: [...datos[1], prediccion], // Añadir el valor de la predicción al final de los datos históricos
-                                        borderColor: '#FF9F40', // Color de la línea de la predicción
-                                        backgroundColor: 'rgba(255, 159, 64, 0.2)', // Color del fondo de la predicción
-                                        fill: false, // No rellenar la curva de la predicción
-                                        borderWidth: 2,
-                                        pointRadius: 5, // Tamaño del punto para la predicción
-                                        pointBackgroundColor: '#FF9F40' // Color del punto de la predicción
-                                    });
-                                }
                             });
 
                             // Crear el gráfico
@@ -138,7 +127,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                             chartInstance = new Chart(ctx, {
                                 type: 'line',
                                 data: {
-                                    labels: [...datosHistoricos['Línea 1'][0], 'Predicción'], // Las etiquetas X deben incluir los ciclos y el ciclo de predicción
+                                    labels: [...datosHistoricos['Línea 1'][2], 'Predicción siguiente ciclo'], // Etiquetas del eje X
                                     datasets: datasets
                                 },
                                 options: {
@@ -148,13 +137,13 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                                         x: {
                                             title: {
                                                 display: true,
-                                                text: 'Ciclos'
+                                                text: 'Ciclos realizados'
                                             }
                                         },
                                         y: {
                                             title: {
                                                 display: true,
-                                                text: 'Gramaje (kg)'
+                                                text: 'Gramaje (g) final por línea'
                                             }
                                         }
                                     },
@@ -162,9 +151,24 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                                         legend: {
                                             position: 'top',
                                         },
+                                        title: {
+                                            display: true,
+                                            text: 'Ka\'anche\' seleccionado: ' + camaId // Mostrar la cama seleccionada en el título
+                                        },
                                         tooltip: {
-                                            mode: 'index',
-                                            intersect: false,
+                                            callbacks: {
+                                                label: function(tooltipItem) {
+                                                    const dataset = tooltipItem.dataset;
+                                                    const index = tooltipItem.dataIndex;
+                                                    const linea = dataset.label.split(' ')[1]; // Obtener el número de línea
+                                                    const tipo =
+                                                        index === dataset.data.length - 1 ?
+                                                        'Predicción,' :
+                                                        'Dato histórico,';
+
+                                                    return `${tipo} Línea ${linea}: ${tooltipItem.raw} g`;
+                                                }
+                                            }
                                         }
                                     }
                                 }
