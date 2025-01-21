@@ -4,6 +4,9 @@ namespace common\components;
 
 use Yii;
 
+use Phpml\Regression\SVR;
+use Phpml\SupportVectorMachine\Kernel;
+
 class DbHandler
 {
     public static function obtenerCicloYFechas()
@@ -127,23 +130,22 @@ class DbHandler
     {
         // Construir la consulta SQL con parámetros dinámicos
         $query = "
-            SELECT 
-                cs.descripcion AS ciclo,
-                cs.descripcion AS descripcionCiclo,
-                cs.fechaInicio AS fechaInicioCiclo,
-                cs.fechaFin AS fechaFinCiclo,
-                c.cultivoId AS cultivoId, -- Id a guardar
-                c.nombreCultivo AS cultivo,
-                c.tipoRiego AS tipoRiego,
-                c.gramaje AS gramajeCultivoTotal, -- Gramaje directo de la tabla cultivo
-                lc.numeroLinea AS linea,
-                lc.gramaje AS gramajeLinea
-            FROM ciclosiembra cs
-            LEFT JOIN cultivo c ON cs.cicloId = c.cicloId
-            LEFT JOIN lineacultivo lc ON c.cultivoId = lc.cultivoId
-            WHERE c.nombreCultivo = :camaId
-            AND (:segundoParametro = '' OR c.tipoRiego = :segundoParametro) -- Considerar el tipo de riego solo si se especifica
-            ORDER BY cs.fechaInicio, cs.cicloId, c.nombreCultivo, lc.numeroLinea;";
+        SELECT 
+            cs.descripcion AS ciclo,
+            cs.descripcion AS descripcionCiclo,
+            cs.fechaInicio AS fechaInicioCiclo,
+            cs.fechaFin AS fechaFinCiclo,
+            c.cultivoId AS cultivoId, -- Id a guardar
+            c.nombreCultivo AS cultivo,
+            c.tipoRiego AS tipoRiego,
+            lc.numeroLinea AS linea,
+            lc.gramaje AS gramajeLinea
+        FROM ciclosiembra cs
+        LEFT JOIN cultivo c ON cs.cicloId = c.cicloId
+        LEFT JOIN lineacultivo lc ON c.cultivoId = lc.cultivoId
+        WHERE c.nombreCultivo = :camaId
+        AND (:segundoParametro = '' OR c.tipoRiego = :segundoParametro) -- Considerar el tipo de riego solo si se especifica
+        ORDER BY cs.fechaInicio, cs.cicloId, c.nombreCultivo, lc.numeroLinea;";
 
         // Ejecutar la consulta con los parámetros
         $datos = Yii::$app->db->createCommand($query, [
@@ -159,29 +161,101 @@ class DbHandler
             $linea = $dato['linea'];
             $gramaje = $dato['gramajeLinea'];
 
-            // Si alguno de los valores es NULL, no lo incluimos
-            if ($linea !== null && $gramaje !== null) {
-                // Crear entrada para el ciclo si no existe
-                if (!isset($resultados[$ciclo])) {
-                    $resultados[$ciclo] = [];
-                }
-
-                // Crear entrada para el cultivo si no existe
-                if (!isset($resultados[$ciclo][$cultivo])) {
-                    $resultados[$ciclo][$cultivo] = [];
-                }
-
-                // Añadir línea y su gramaje
-                $resultados[$ciclo][$cultivo][] = [
-                    'linea' => $linea,
-                    'gramaje' => $gramaje
-                ];
+            // Crear entrada para el ciclo si no existe
+            if (!isset($resultados[$ciclo])) {
+                $resultados[$ciclo] = [];
             }
+
+            // Crear entrada para el cultivo si no existe
+            if (!isset($resultados[$ciclo][$cultivo])) {
+                $resultados[$ciclo][$cultivo] = [];
+            }
+
+            // Añadir línea y su gramaje
+            $resultados[$ciclo][$cultivo][] = [
+                'linea' => $linea,
+                'gramaje' => $gramaje
+            ];
         }
 
         // Retornar los resultados organizados
         return $resultados;
     }
+
+
+    public static function predecirPesoLineas($camaId, $segundoParametro)
+    {
+        // Obtener los datos organizados
+        $datos = self::obtenerDatosPorCama($camaId, $segundoParametro);
+
+        // Inicializar arrays para muestras y objetivos
+        $samples = [];
+        $targets = [];
+
+        // Recorrer los datos para construir el conjunto de entrenamiento
+        foreach ($datos as $ciclo => $cultivos) {
+            foreach ($cultivos as $cultivo => $lineas) {
+                foreach ($lineas as $lineaData) {
+                    // Calcular duración de la siembra (si las fechas están disponibles)
+                    $fechaInicio = isset($lineaData['fechaInicio']) ? strtotime($lineaData['fechaInicio']) : null;
+                    $fechaFin = isset($lineaData['fechaFin']) ? strtotime($lineaData['fechaFin']) : null;
+                    $duracion = ($fechaInicio && $fechaFin) ? ($fechaFin - $fechaInicio) / (60 * 60 * 24) : 0;
+
+                    // Validar que la duración sea positiva
+                    if ($duracion < 0) {
+                        $duracion = 0;
+                    }
+
+                    // Construir la muestra con línea y duración
+                    $samples[] = [
+                        (float)$lineaData['linea'], // Línea
+                        (float)$duracion,          // Duración de la siembra
+                    ];
+
+                    // Agregar el objetivo (gramaje)
+                    $targets[] = (float)$lineaData['gramaje'];
+                }
+            }
+        }
+
+        // Verificar si hay suficientes datos para entrenar el modelo
+        if (count($samples) < 2) {
+            return [
+                'error' => 'No hay suficientes datos históricos para realizar la predicción.'
+            ];
+        }
+
+        // Crear el modelo SVR
+        $regression = new SVR(Kernel::LINEAR);
+
+        // Entrenar el modelo con los datos históricos
+        $regression->train($samples, $targets);
+
+        // Preparar las líneas para las predicciones con duraciones estimadas
+        $lineasParaPredecir = [
+            [1, 40], // Línea 1 con duración de 30 días
+            [2, 30], // Línea 2 con duración de 30 días
+            [3, 30],
+            [4, 30],
+            [5, 30],
+            [6, 30],
+        ];
+
+        // Realizar las predicciones
+        $predicciones = $regression->predict($lineasParaPredecir);
+
+        // Construir el resultado con las líneas y sus predicciones
+        $resultados = [];
+        foreach ($lineasParaPredecir as $indice => $linea) {
+            $resultados[] = [
+                'linea' => $linea[0],
+                'gramajePredicho' => round($predicciones[$indice], 5), // Redondear para claridad
+            ];
+        }
+
+        return $resultados;
+    }
+
 
 
 

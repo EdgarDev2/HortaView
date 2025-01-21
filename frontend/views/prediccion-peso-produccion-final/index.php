@@ -64,43 +64,40 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
             </div>
         </div>
     </div>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Elementos de la interfaz
             const btnFiltrar = document.getElementById('btnFiltrar');
             const selectCama = document.getElementById('camaId');
-            let chartInstance = null; // Variable para almacenar la instancia del gráfico
+            let chartInstance = null;
 
-            // Función para destruir el gráfico anterior
             function destruirGrafico() {
                 if (chartInstance) {
-                    chartInstance.destroy(); // Destruye el gráfico previo
-                    chartInstance = null; // Reinicia la instancia
+                    chartInstance.destroy();
+                    chartInstance = null;
                 }
             }
 
-            // Función para realizar la solicitud AJAX
             function cargarDatos(camaId) {
                 console.log('Cama seleccionada:', camaId);
 
                 $.ajax({
                     type: 'POST',
-                    url: 'index.php?r=prediccion-peso-produccion-final/filtrar', // Asegúrate de que la URL sea la correcta
+                    url: 'index.php?r=prediccion-peso-produccion-final/filtrar',
                     data: {
-                        camaId: camaId // Solo enviamos el ID de la cama
+                        camaId: camaId
                     },
                     success: function(response) {
                         if (response.success) {
                             const datos = response.datos_historicos;
+                            const predicciones = response.predicciones;
 
-                            // Generar etiquetas del eje X con nombres completos de los ciclos
+                            // Generar etiquetas del eje X con nombres de ciclos y predicción
                             const ciclos = Object.keys(datos).map(ciclo => ciclo);
-                            ciclos.push('Predicción'); // Añadir la columna "Predicción" al final
-                            console.log("Ciclos: ", Object.keys(datos)); // Verifica los ciclos en los datos
+                            ciclos.push('Predicción'); // Añadir "Predicción"
 
+                            console.log("Ciclos: ", ciclos);
 
-                            // Llenar las líneas y sus gramajes
+                            // Procesar datos históricos
                             const lineas = {};
                             Object.keys(datos).forEach(ciclo => {
                                 const cultivos = datos[ciclo];
@@ -117,32 +114,42 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                                 });
                             });
 
-                            // Asegurar que todas las líneas tengan datos para todos los ciclos (rellenar con 0 si no hay datos)
+                            // Agregar las predicciones a las líneas
+                            predicciones.forEach(({
+                                linea,
+                                gramajePredicho
+                            }) => {
+                                if (!lineas[linea]) {
+                                    lineas[linea] = Array(ciclos.length - 1).fill(0); // Rellenar con ceros si no existían datos
+                                }
+                                lineas[linea].push(gramajePredicho); // Añadir predicción al final
+                            });
+
+                            // Configurar los datasets
                             const datasets = [];
                             const colores = ['#FF9F40', '#36A2EB', '#FFCD56', '#9966FF', '#4BC0C0'];
                             let colorIndex = 0;
+
                             Object.keys(lineas).forEach(linea => {
                                 const datosLinea = lineas[linea];
-                                const datosRellenados = Array(ciclos.length).fill(0).map((_, index) => datosLinea[index] || 0);
-
                                 datasets.push({
-                                    label: `Dato histórico línea ${linea}`,
-                                    data: datosRellenados,
+                                    label: `Dato historico línea ${linea}`,
+                                    data: datosLinea,
                                     backgroundColor: colores[colorIndex % colores.length],
                                     borderColor: colores[colorIndex % colores.length],
-                                    borderWidth: 1,
+                                    borderWidth: 2,
                                     fill: false,
                                 });
                                 colorIndex++;
                             });
 
-                            // Destruir el gráfico anterior antes de crear uno nuevo
+                            // Destruir el gráfico anterior
                             destruirGrafico();
 
-                            // Configuración del gráfico
+                            // Crear el nuevo gráfico
                             const ctx = document.getElementById('grafico-consolidado').getContext('2d');
                             chartInstance = new Chart(ctx, {
-                                type: 'line', // Cambiar a 'bar' para barras apiladas si se desea
+                                type: 'line',
                                 data: {
                                     labels: ciclos,
                                     datasets: datasets,
@@ -156,7 +163,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                                         },
                                         title: {
                                             display: true,
-                                            text: camaId // Mostrar la cama seleccionada en el título
+                                            text: `Cama seleccionada: ${camaId}`
                                         }
                                     },
                                     scales: {
@@ -187,9 +194,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                 });
             }
 
-            // Capturar el evento del botón Filtrar
             btnFiltrar.addEventListener('click', function() {
-                // Obtener la cama seleccionada
                 const camaSeleccionada = selectCama.value;
 
                 if (!camaSeleccionada) {
@@ -197,13 +202,10 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                     return;
                 }
 
-                // Llamar a la función cargarDatos para realizar la solicitud AJAX
                 cargarDatos(camaSeleccionada);
             });
         });
     </script>
-
-
 
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

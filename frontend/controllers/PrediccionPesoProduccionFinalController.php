@@ -71,14 +71,18 @@ class PrediccionPesoProduccionFinalController extends Controller
                     ];
                 }
 
-                // Obtener los datos filtrados
+                // Obtener los datos históricos
                 $datosHistoricos = DbHandler::obtenerDatosPorCama($camaId, $tipoRiego);
 
-                // Devolver los datos en formato JSON
+                // Obtener las predicciones de peso para las líneas
+                $predicciones = DbHandler::predecirPesoLineas($camaId, $tipoRiego);
+
+                // Devolver los datos históricos y las predicciones en formato JSON
                 Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
                 return [
                     'success' => true,
                     'datos_historicos' => $datosHistoricos,
+                    'predicciones' => $predicciones,
                 ];
             }
         }
