@@ -21,7 +21,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
 <div class="tiempo-real-humeda-suelo-index">
     <!-- Mostrar el gráfico de predicciones vs valores reales -->
     <div class="card mt-4">
-        <div class="card-header bg-warning text-dark">
+        <div class="card-header bg-primary text-white">
             <h4>Tiempo real humedad del suelo</h4>
         </div>
         <div class="row mt-4">
@@ -116,8 +116,8 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                         },
                     },
                     y: {
-                        min: 0,
-                        max: 100,
+                        //min: 0,
+                        //max: 100,
                         beginAtZero: true,
                         ticks: {
                             stepSize: 10,

@@ -3,18 +3,9 @@
 namespace frontend\controllers;
 
 use common\components\DbHandler;
-use frontend\controllers\ComunController;
-//use frontend\models\CicloSiembra;
-use frontend\models\Cultivo;
-use frontend\models\LineaCultivo;
-use frontend\models\RegistroGerminacion;
-use frontend\models\Temperatura;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
 use yii\web\Controller;
-use Phpml\Regression\LeastSquares;
-use Phpml\Regression\SVR;
-use Phpml\SupportVectorMachine\Kernel;
 use Yii;
 
 class PrediccionPesoProduccionFinalController extends Controller
@@ -43,73 +34,52 @@ class PrediccionPesoProduccionFinalController extends Controller
         ];
     }
 
-    /*public function actionIndex()
-    {
-        DbHandler::obtenerCicloYFechas();
-
-        //$datos = DbHandler::obtenerDatosConPrediccion();
-        //return $this->render('index', ['datos' => $datos]);
-    }*/
     public function actionIndex()
     {
-        // Pasar los datos a la vista
+        DbHandler::obtenerCicloYFechas();
         return $this->render('index');
     }
 
     public function actionFiltrar()
     {
         if (Yii::$app->request->isAjax) {
-            // Obtener el ID de la cama desde la solicitud
             $camaId = Yii::$app->request->post('camaId');
-
             // Verificar que el camaId no esté vacío
             if ($camaId) {
-                // Obtener el tipo de riego asociado a la cama
-                $tipoRiego = $this->obtenerTipoRiegoPorCama($camaId);
-
-                // Si no se encuentra el tipo de riego, devolver un error
-                if ($tipoRiego === null) {
-                    Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
-                    return [
-                        'success' => false,
-                        'message' => 'Cama no reconocida.',
-                    ];
-                }
-
-                // Obtener los datos históricos
-                $datosHistoricos = DbHandler::obtenerDatosPorCama($camaId, $tipoRiego);
-
-                // Obtener las predicciones de peso para las líneas
-                $predicciones = DbHandler::predecirPesoLineas($camaId, $tipoRiego);
+                $datosHistoricos = DbHandler::obtenerDatosPorCama($camaId);
+                $predicciones = DbHandler::predecirPesoLineas($camaId);
                 // Devolver los datos históricos y las predicciones en formato JSON
                 Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
                 return [
                     'success' => true,
                     'datos_historicos' => $datosHistoricos,
-                    'predicciones' => $predicciones, // Aquí retornamos las predicciones organizadas por línea
+                    'predicciones' => $predicciones,
                 ];
             }
         }
-
-        // Respuesta en caso de error
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         return [
             'success' => false,
             'message' => 'Cama no seleccionada.',
         ];
     }
+    //Ejemplo de lo que retorna JSON:
+    /*
+        {
+            "success": true,
+            "datos_historicos": {
+                "Línea 1": [[1, 2, 3, 4], [234, 783, 652, 410], ["Ciclo 1 febrero - abril", "Ciclo 2 junio - julio", "Ciclo 3 septiembre - nov", "Ciclo actual de siembra"]],
+                "Línea 2": [[1, 2, 3, 4], [100, 250, 500, 600], ["Ciclo 1 febrero - abril", "Ciclo 2 junio - julio", "Ciclo 3 septiembre - nov", "Ciclo actual de siembra"]],
+                "Línea 3": [[1, 2], [150, 180], ["Ciclo 1 febrero - abril", "Ciclo 2 junio - julio"]],
+                "Línea 4": [[1, 2, 3, 4], [300, 400, 500, 600], ["Ciclo 1 febrero - abril", "Ciclo 2 junio - julio", "Ciclo 3 septiembre - nov", "Ciclo actual de siembra"]]
+            },
+            "predicciones": {
+                "Línea 1": 315.65,
+                "Línea 2": 525.10,
+                "Línea 3": null,
+                "Línea 4": 650.20
+            }
+        }
 
-    private function obtenerTipoRiegoPorCama($camaId)
-    {
-        // Asegurarse de que los nombres de las camas coincidan con los valores del frontend
-        $tiposRiego = [
-            'Cama 1 cilantro automático' => 'Por goteo',
-            'Cama 2 rábano automático' => 'Por aspersores',
-            'Cama 3 cilantro manual' => 'Por goteo',
-            'Cama 4 rábano manual' => '', // Cadena vacía
-        ];
-
-        // Retorna el tipo de riego si existe la cama, si no retorna null
-        return $tiposRiego[$camaId] ?? null;
-    }
+     */
 }

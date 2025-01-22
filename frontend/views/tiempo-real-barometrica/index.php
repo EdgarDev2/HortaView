@@ -21,7 +21,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
 <div class="tiempo-real-presion-barometrica-index">
     <!-- Mostrar el gráfico de predicciones vs valores reales -->
     <div class="card mt-4">
-        <div class="card-header bg-warning text-dark">
+        <div class="card-header bg-primary text-white">
             <h4>Tiempo real presión barométrica</h4>
         </div>
         <div class="row mt-4">
@@ -69,6 +69,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
     </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const ctx = document.getElementById('graficoPresionBarometrica').getContext('2d');

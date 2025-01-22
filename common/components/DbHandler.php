@@ -127,7 +127,7 @@ class DbHandler
         return $resultados;
     }
 
-    public static function obtenerDatosPorCama($nombreCultivo, $tipoRiego)
+    public static function obtenerDatosPorCama($nombreCultivo)
     {
         // Construir la consulta SQL con los parámetros proporcionados
         $query = "
@@ -143,18 +143,15 @@ class DbHandler
         LEFT JOIN cultivo c ON cs.cicloId = c.cicloId
         LEFT JOIN lineacultivo lc ON c.cultivoId = lc.cultivoId
         WHERE c.nombreCultivo = :nombreCultivo
-        AND c.tipoRiego = :tipoRiego
         AND lc.numeroLinea IS NOT NULL
         AND lc.gramaje IS NOT NULL
         ORDER BY cs.fechaInicio, c.nombreCultivo ASC, lc.numeroLinea;
         ";
 
-        // Ejecutar la consulta con los parámetros
+        // Ejecutar la consulta con el parámetro
         $resultados = Yii::$app->db->createCommand($query, [
             ':nombreCultivo' => $nombreCultivo,
-            ':tipoRiego' => $tipoRiego,
         ])->queryAll();
-
         // Organizar los datos por numeroLinea
         $data = [];
         foreach ($resultados as $row) {
@@ -187,10 +184,10 @@ class DbHandler
 
 
 
-    public static function predecirPesoLineas($nombreCultivo, $tipoRiego)
+    public static function predecirPesoLineas($nombreCultivo)
     {
         // Obtener los datos organizados
-        $data = self::obtenerDatosPorCama($nombreCultivo, $tipoRiego);
+        $data = self::obtenerDatosPorCama($nombreCultivo);
 
         $predicciones = [];
 

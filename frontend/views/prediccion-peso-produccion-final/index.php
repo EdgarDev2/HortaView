@@ -64,136 +64,157 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
             </div>
         </div>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const btnFiltrar = document.getElementById('btnFiltrar');
-            const selectCama = document.getElementById('camaId');
-            let chartInstance = null;
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnFiltrar = document.getElementById('btnFiltrar');
+        const selectCama = document.getElementById('camaId');
+        let chartInstance = null;
 
-            // Función para destruir el gráfico actual
-            function destruirGrafico() {
-                if (chartInstance) {
-                    chartInstance.destroy();
-                    chartInstance = null;
-                }
+        // Función para destruir el gráfico actual
+        function destruirGrafico() {
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
             }
+        }
 
-            function cargarDatos(camaId) {
-                console.log(camaId);
+        function cargarDatos(camaId) {
+            console.log(camaId);
 
-                $.ajax({
-                    type: 'POST',
-                    url: 'index.php?r=prediccion-peso-produccion-final/filtrar',
-                    data: {
-                        camaId: camaId
-                    },
-                    dataType: 'json',
+            $.ajax({
+                type: 'POST',
+                url: 'index.php?r=prediccion-peso-produccion-final/filtrar',
+                data: {
+                    camaId: camaId
+                },
+                dataType: 'json',
 
-                    success: function(response) {
-                        if (response.success) {
-                            destruirGrafico(); // Destruir el gráfico actual
+                success: function(response) {
+                    if (response.success) {
+                        destruirGrafico(); // Destruir el gráfico actual
 
-                            const datosHistoricos = response.datos_historicos; // Datos históricos por línea
-                            const predicciones = response.predicciones; // Predicciones por línea
-                            console.log(response.predicciones);
+                        const datosHistoricos = response.datos_historicos; // Datos históricos por línea
+                        const predicciones = response.predicciones; // Predicciones por línea
+                        console.log(response.predicciones);
 
-                            const etiquetas = Object.keys(datosHistoricos);
-                            const datasets = [];
-                            const colores = ['#36A2EB', '#FF6384', '#4BC0C0', '#FF9F40', '#9966FF', '#FFCD56'];
+                        const etiquetas = Object.keys(datosHistoricos);
+                        const datasets = [];
+                        const colores = ['#36A2EB', '#FF6384', '#4BC0C0', '#FF9F40', '#9966FF', '#FFCD56'];
 
-                            etiquetas.forEach((linea, index) => {
-                                const datos = datosHistoricos[linea];
-                                const prediccion = predicciones[linea] ?? null;
+                        etiquetas.forEach((linea, index) => {
+                            const datos = datosHistoricos[linea];
+                            const prediccion = predicciones[linea] ?? null;
 
-                                // Combinar datos históricos con la predicción
-                                const datosCombinados = [...datos[1], prediccion];
+                            // Combinar datos históricos con la predicción
+                            const datosCombinados = [...datos[1], prediccion];
 
-                                // Dataset único con puntos históricos y predicción conectados
-                                datasets.push({
-                                    label: "" + linea,
-                                    data: datosCombinados,
-                                    borderColor: colores[index % colores.length], // Color de la línea
-                                    fill: false, // Rellenar bajo la curva
-                                    borderWidth: 2,
-                                    pointRadius: 4, // Tamaño del punto
-                                    pointBackgroundColor: datosCombinados.map((_, idx) =>
-                                        idx === datosCombinados.length - 1 ? '#FF9F40' : '#FFFFFF'
-                                    ), // Color del punto
-                                });
+                            // Dataset único con puntos históricos y predicción conectados
+                            datasets.push({
+                                label: "" + linea,
+                                data: datosCombinados,
+                                borderColor: colores[index % colores.length], // Color de la línea
+                                fill: false, // Rellenar bajo la curva
+                                borderWidth: 2,
+                                pointRadius: datosCombinados.map((_, idx) =>
+                                    idx === datosCombinados.length - 1 ? 7 : 4 // Si es la predicción, tamaño 6, si no, tamaño 4
+                                ), // Tamaño del punto
+                                pointBackgroundColor: datosCombinados.map((_, idx) =>
+                                    idx === datosCombinados.length - 1 ? '#FF4500' : '#FFE0E6' // Naranja rojo para la predicción, blanco para los históricos
+                                ) // Color del punto prediccion y datos historico
                             });
+                        });
 
-                            // Crear el gráfico
-                            const ctx = document.getElementById('grafico-consolidado').getContext('2d');
-                            chartInstance = new Chart(ctx, {
-                                type: 'line',
-                                data: {
-                                    labels: [...datosHistoricos['Línea 1'][2], 'Predicción siguiente ciclo'], // Etiquetas del eje X
-                                    datasets: datasets
-                                },
-                                options: {
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    scales: {
-                                        x: {
-                                            title: {
-                                                display: true,
-                                                text: 'Ciclos realizados'
-                                            }
-                                        },
-                                        y: {
-                                            title: {
-                                                display: true,
-                                                text: 'Gramaje (g) final por línea'
-                                            }
-                                        }
-                                    },
-                                    plugins: {
-                                        legend: {
-                                            position: 'top',
-                                        },
+                        // Crear el gráfico
+                        const ctx = document.getElementById('grafico-consolidado').getContext('2d');
+                        chartInstance = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: [...datosHistoricos['Línea 1'][2], 'Predicción siguiente ciclo'], // Etiquetas del eje X
+                                datasets: datasets
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: true,
+                                scales: {
+                                    x: {
                                         title: {
                                             display: true,
-                                            text: 'Ka\'anche\' seleccionado: ' + camaId // Mostrar la cama seleccionada en el título
+                                            text: 'Ciclos realizados',
+                                            font: {
+                                                size: 15, // Tamaño de la fuente para todas las etiquetas
+                                                weight: 'bold'
+                                            },
                                         },
-                                        tooltip: {
-                                            callbacks: {
-                                                label: function(tooltipItem) {
-                                                    const dataset = tooltipItem.dataset;
-                                                    const index = tooltipItem.dataIndex;
-                                                    const linea = dataset.label.split(' ')[1]; // Obtener el número de línea
-                                                    const tipo =
-                                                        index === dataset.data.length - 1 ?
-                                                        'Predicción,' :
-                                                        'Dato histórico,';
-
-                                                    return `${tipo} Línea ${linea}: ${tooltipItem.raw} g`;
-                                                }
+                                        ticks: {
+                                            font: {
+                                                size: 14, // Tamaño de la fuente para todas las etiquetas
+                                                //weight: 'bold'
+                                            },
+                                        }
+                                    },
+                                    y: {
+                                        title: {
+                                            display: true,
+                                            text: 'Gramaje (g) final por línea',
+                                            font: {
+                                                size: 15, // Tamaño de la fuente para todas las etiquetas
+                                                weight: 'bold'
+                                            },
+                                        },
+                                        ticks: {
+                                            font: {
+                                                size: 14, // Tamaño de la fuente para todas las etiquetas
+                                                //weight: 'bold'
+                                            },
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Ka\'anche\' seleccionado: ' + camaId, // Mostrar la cama seleccionada en el título
+                                        font: {
+                                            size: 15, // Tamaño de la fuente para todas las etiquetas
+                                            weight: 'bold',
+                                        },
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(tooltipItem) {
+                                                const dataset = tooltipItem.dataset;
+                                                const index = tooltipItem.dataIndex;
+                                                const linea = dataset.label.split(' ')[1]; // Obtener el número de línea
+                                                const tipo =
+                                                    index === dataset.data.length - 1 ?
+                                                    'Predicción,' :
+                                                    'Dato histórico,';
+                                                return `${tipo} Línea ${linea}: ${tooltipItem.raw} g`;
                                             }
                                         }
                                     }
                                 }
-                            });
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        alert('Hubo un error al obtener los datos.');
+                            }
+                        });
                     }
-                });
-            }
-
-            // Evento de click en el botón de filtrar
-            btnFiltrar.addEventListener('click', function() {
-                const camaSeleccionada = selectCama.value;
-
-                if (!camaSeleccionada) {
-                    alert('Por favor, selecciona una cama.');
-                    return;
+                },
+                error: function(xhr, status, error) {
+                    alert('Hubo un error al obtener los datos.');
                 }
-
-                cargarDatos(camaSeleccionada);
             });
-        });
-    </script>
+        }
 
-</div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        // Evento de click en el botón de filtrar
+        btnFiltrar.addEventListener('click', function() {
+            const camaSeleccionada = selectCama.value = "Cama 1 cilantro automático";
+            if (!camaSeleccionada) {
+                alert('Por favor, selecciona una cama.');
+                return;
+            }
+            cargarDatos(camaSeleccionada);
+        });
+    });
+</script>
