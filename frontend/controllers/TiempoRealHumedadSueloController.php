@@ -96,7 +96,6 @@ class TiempoRealHumedadSueloController extends Controller
                     ->orderBy(['fecha' => SORT_ASC, 'hora' => SORT_ASC])
                     ->asArray()
                     ->all();
-
                 // Agregar los resultados al arreglo, etiquetados por la tabla
                 $resultados[$nombreTabla] = $datos;
             } else {

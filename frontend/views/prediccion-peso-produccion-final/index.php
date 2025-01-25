@@ -135,7 +135,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                             },
                             options: {
                                 responsive: true,
-                                maintainAspectRatio: true,
+                                maintainAspectRatio: false,
                                 scales: {
                                     x: {
                                         title: {
@@ -209,7 +209,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
 
         // Evento de click en el botón de filtrar
         btnFiltrar.addEventListener('click', function() {
-            const camaSeleccionada = selectCama.value = "Cama 1 cilantro automático";
+            const camaSeleccionada = selectCama.value;
             if (!camaSeleccionada) {
                 alert('Por favor, selecciona una cama.');
                 return;

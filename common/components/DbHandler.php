@@ -236,6 +236,41 @@ class DbHandler
         return $predicciones;
     }
 
+    public static function obtenerDatosGerminacion($nombreCultivo)
+    {
+        // Construcción de la consulta SQL
+        $query = "
+        SELECT 
+            cs.descripcion AS descripcionCiclo,
+            c.nombreCultivo,
+            rg.linea,
+            COUNT(rg.numeroZurcosGerminados) AS registrosGerminacion,
+            MAX(rg.numeroZurcosGerminados) AS maximoZurcosGerminados,
+            (MAX(rg.numeroZurcosGerminados) / 7) * 100 AS porcentajeGerminacion
+        FROM ciclosiembra cs
+        LEFT JOIN cultivo c ON cs.cicloId = c.cicloId
+        LEFT JOIN registrogerminacion rg ON c.cultivoId = rg.cultivoId
+        WHERE c.nombreCultivo = :nombreCultivo
+        AND rg.linea IS NOT NULL
+        AND rg.numeroZurcosGerminados IS NOT NULL
+        GROUP BY cs.descripcion, c.nombreCultivo, rg.linea
+        ORDER BY cs.descripcion ASC, rg.linea ASC;
+        ";
+
+        try {
+            // Ejecutar la consulta con el parámetro proporcionado
+            $resultados = Yii::$app->db->createCommand($query, [
+                ':nombreCultivo' => $nombreCultivo, // Parámetro de filtro
+            ])->queryAll();
+
+            return $resultados; // Retornar resultados
+        } catch (\Exception $e) {
+            // Manejo de errores
+            Yii::error("Error al obtener datos de germinación: " . $e->getMessage(), __METHOD__);
+            return []; // Retornar un arreglo vacío en caso de error
+        }
+    }
+
 
 
 
