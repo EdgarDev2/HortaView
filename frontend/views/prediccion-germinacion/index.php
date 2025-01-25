@@ -1,83 +1,224 @@
 <?php
 
 use yii\helpers\Html;
-use practically\chartjs\widgets\Chart as WidgetsChart;
+
+$this->registerCssFile('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
+$this->registerJsFile('https://cdn.jsdelivr.net/npm/chart.js');
+$this->registerJsFile('https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js');
+
+// Clases comunes bootstrap
+$btnClass = 'btn btn-outline-success btn-sm border-0 shadow-none';
+$btnDownloadClass = 'btn btn-outline-primary btn-sm border-0 shadow-none';
+$cardInputDate = 'input-group input-group-sm d-flex align-items-center gap-2 bg-light rounded px-2';
+$inputDate = 'form-control placeholder-wave bg-transparent text-secondary';
+$selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light rounded';
 
 $this->title = 'Predicción porcentaje de germinación por línea para el siguiente ciclo';
 
 ?>
-<div class="prediccion-germinacion-index container py-5">
-    <h1 class="display-5 text-secondary text-center mb-5"><?= Html::encode($this->title) ?></h1>
-
-    <?php foreach ($cultivos as $cultivo): ?>
-        <div class="cultivo mb-5 p-4 border rounded shadow-sm bg-white">
-            <h3 class="text-secondary mb-3 text-center"><?= Html::encode($cultivo['nombreCultivo']) ?></h3>
-
-            <?php if (isset($prediccionesPorCultivo[$cultivo['cultivoId']])): ?>
-                <div class="chart-container mb-4">
-                    <!-- Gráfica de Predicciones -->
-                    <?= WidgetsChart::widget([
-                        'type' => WidgetsChart::TYPE_LINE,
-                        'datasets' => [
-                            [
-                                'data' => array_column($prediccionesPorCultivo[$cultivo['cultivoId']], 'prediccion'),
-                                'label' => 'Predicción % de Germinación por línea (Siguiente ciclo)',
-                                'fill' => false,
-                                'tension' => 0.4,
-
-                            ],
-                            [
-                                'data' => array_column($datosHistoricos[$cultivo['cultivoId']], 'alturas'),
-                                'label' => 'Altura máxima de brotes (Histórico)',
-                                'fill' => false,
-                                'tension' => 0.4,
-
-                            ],
-                            [
-                                'data' => array_column($datosHistoricos[$cultivo['cultivoId']], 'surcosGerminados'),
-                                'label' => 'Promedio de surcos germinados (Histórico)',
-                                'fill' => false,
-                                'tension' => 0.4,
-
-                            ],
-                            [
-                                'data' => array_column($datosHistoricos[$cultivo['cultivoId']], 'totalSurcos'),
-                                'label' => 'Total de surcos germinados (Histórico)',
-                                'fill' => false,
-                                'tension' => 0.4,
-
-                            ]
-                        ],
-                        'clientOptions' => [
-                            'maintainAspectRatio' => true,
-                            'plugins' => [
-                                'title' => [
-                                    'display' => true,
-                                ],
-                            ],
-                            'scales' => [
-                                'x' => [
-                                    'title' => [
-                                        'display' => true,
-                                        'text' => 'Líneas de la cama Ka\'anche\'',
-                                    ],
-                                    'type' => 'category',
-                                    'labels' => range(1, count($prediccionesPorCultivo[$cultivo['cultivoId']])),
-                                ],
-                                'y' => [
-                                    'title' => [
-                                        'display' => true,
-                                        'text' => 'Porcentaje de Germinación',
-                                    ],
-                                    'beginAtZero' => false,
-                                ],
-                            ],
-                        ],
-                    ]); ?>
-                </div>
-            <?php else: ?>
-                <p class="text-danger text-center">No hay predicciones disponibles para este cultivo.</p>
-            <?php endif; ?>
+<div class="prediccion-germinacion-index container">
+    <div class="card mt-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Porcentaje de germinación (siguiente ciclo).</h4>
         </div>
-    <?php endforeach; ?>
+
+        <!-- Filtros y opciones de gráficos -->
+        <div class="row mt-4">
+            <div class="col-md-12 d-flex flex-wrap align-items-center gap-2">
+                <!-- Botones para tipo de gráfico -->
+                <div class="btn-group" role="group" aria-label="Opciones de gráficos">
+                    <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line')">
+                        <i class="fas fa-chart-line"></i> Lineal
+                    </button>
+                    <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Barra" onclick="cambiarTipoGrafico('bar')">
+                        <i class="fas fa-chart-bar"></i> Barra
+                    </button>
+                    <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Radar" onclick="cambiarTipoGrafico('radar')">
+                        <i class="fas fa-chart-pie"></i> Radar
+                    </button>
+                    <button class="<?= $btnDownloadClass ?>" type="button" title="Descargar gráfico como imagen" onclick="descargarImagen('graficoCama', 'grafico_cama.png')">
+                        <i class="fas fa-download"></i> Descargar
+                    </button>
+                </div>
+                <!-- Selector de cama -->
+                <div class="input-group input-group-sm" style="max-width: 226px;">
+                    <select id="camaId" class="<?= $selectPlace ?>" title="Selecciona cama">
+                        <option value="" disabled selected>Seleccionar cama</option>
+                        <option value="Cama 1 cilantro automático">Cama 1 cilantro automático</option>
+                        <option value="Cama 2 rábano automático">Cama 2 rábano automático</option>
+                        <option value="Cama 3 cilantro manual">Cama 3 cilantro manual</option>
+                        <option value="Cama 4 rábano manual"> Cama 4 rábano manual</option>
+                    </select>
+                </div>
+                <!-- Botón Filtrar -->
+                <div>
+                    <button id="btnFiltrar" class="btn btn-outline-primary btn-sm border-0 shadow-none">Filtrar datos</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico -->
+        <div class="card-body">
+            <div class="">
+                <div class="chart-container" style="position: relative; height: 70vh; width: 100%;">
+                    <canvas id="grafico-consolidado"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnFiltrar = document.getElementById('btnFiltrar');
+        const selectCama = document.getElementById('camaId');
+        let chartInstance = null;
+
+        // Función para destruir el gráfico actual
+        function destruirGrafico() {
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+        }
+
+        function cargarDatos(camaId) {
+            console.log(camaId);
+
+            $.ajax({
+                type: 'POST',
+                url: 'index.php?r=prediccion-germinacion/filtrar',
+                data: {
+                    camaId: camaId
+                },
+                dataType: 'json',
+
+                success: function(response) {
+                    if (response.success) {
+                        destruirGrafico(); // Destruir el gráfico actual
+
+                        const datosHistoricos = response.datos_historicos; // Datos históricos por línea
+                        const predicciones = response.predicciones; // Predicciones por línea
+                        console.log(response.datos_historicos);
+                        console.log(response.predicciones);
+
+                        const etiquetas = Object.keys(datosHistoricos);
+                        const datasets = [];
+                        const colores = ['#36A2EB', '#FF6384', '#4BC0C0', '#FF9F40', '#9966FF', '#FFCD56'];
+
+                        etiquetas.forEach((linea, index) => {
+                            const datos = datosHistoricos[linea];
+                            const prediccion = predicciones[linea] ?? null;
+
+                            // Combinar datos históricos con la predicción
+                            const datosCombinados = [...datos[1], prediccion];
+
+                            // Dataset único con puntos históricos y predicción conectados
+                            datasets.push({
+                                label: "" + linea,
+                                data: datosCombinados,
+                                borderColor: colores[index % colores.length], // Color de la línea
+                                fill: false, // Rellenar bajo la curva
+                                borderWidth: 2,
+                                pointRadius: datosCombinados.map((_, idx) =>
+                                    idx === datosCombinados.length - 1 ? 7 : 4 // Si es la predicción, tamaño 6, si no, tamaño 4
+                                ), // Tamaño del punto
+                                pointBackgroundColor: datosCombinados.map((_, idx) =>
+                                    idx === datosCombinados.length - 1 ? '#FF4500' : '#FFE0E6' // Naranja rojo para la predicción, blanco para los históricos
+                                ) // Color del punto prediccion y datos historico
+                            });
+                        });
+
+                        // Crear el gráfico
+                        const ctx = document.getElementById('grafico-consolidado').getContext('2d');
+                        chartInstance = new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: [...datosHistoricos['Línea 1'][2], 'Predicción siguiente ciclo'], // Etiquetas del eje X
+                                datasets: datasets
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    x: {
+                                        title: {
+                                            display: true,
+                                            text: 'Ciclos realizados',
+                                            font: {
+                                                size: 15, // Tamaño de la fuente para todas las etiquetas
+                                                weight: 'bold'
+                                            },
+                                        },
+                                        ticks: {
+                                            font: {
+                                                size: 14, // Tamaño de la fuente para todas las etiquetas
+                                                //weight: 'bold'
+                                            },
+                                        }
+                                    },
+                                    y: {
+                                        title: {
+                                            display: true,
+                                            text: 'Porcentaje de germinación final por línea',
+                                            font: {
+                                                size: 15, // Tamaño de la fuente para todas las etiquetas
+                                                weight: 'bold'
+                                            },
+                                        },
+                                        ticks: {
+                                            font: {
+                                                size: 14, // Tamaño de la fuente para todas las etiquetas
+                                                //weight: 'bold'
+                                            },
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Ka\'anche\' seleccionado: ' + camaId, // Mostrar la cama seleccionada en el título
+                                        font: {
+                                            size: 15, // Tamaño de la fuente para todas las etiquetas
+                                            weight: 'bold',
+                                        },
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(tooltipItem) {
+                                                const dataset = tooltipItem.dataset;
+                                                const index = tooltipItem.dataIndex;
+                                                const linea = dataset.label.split(' ')[1]; // Obtener el número de línea
+                                                const tipo =
+                                                    index === dataset.data.length - 1 ?
+                                                    'Predicción,' :
+                                                    'Dato histórico,';
+                                                return `${tipo} Línea ${linea}: ${tooltipItem.raw} %`;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('Hubo un error al obtener los datos.');
+                }
+            });
+        }
+
+        // Evento de click en el botón de filtrar
+        btnFiltrar.addEventListener('click', function() {
+            const camaSeleccionada = selectCama.value;
+            if (!camaSeleccionada) {
+                alert('Por favor, selecciona una cama.');
+                return;
+            }
+            cargarDatos(camaSeleccionada);
+        });
+    });
+</script>

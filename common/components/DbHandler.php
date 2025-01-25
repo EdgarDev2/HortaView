@@ -242,9 +242,9 @@ class DbHandler
         $query = "
         SELECT 
             cs.descripcion AS descripcionCiclo,
+            cs.ciclo AS numeroCiclo,
             c.nombreCultivo,
-            rg.linea,
-            COUNT(rg.numeroZurcosGerminados) AS registrosGerminacion,
+            rg.linea AS numeroLinea,
             MAX(rg.numeroZurcosGerminados) AS maximoZurcosGerminados,
             (MAX(rg.numeroZurcosGerminados) / 7) * 100 AS porcentajeGerminacion
         FROM ciclosiembra cs
@@ -253,23 +253,104 @@ class DbHandler
         WHERE c.nombreCultivo = :nombreCultivo
         AND rg.linea IS NOT NULL
         AND rg.numeroZurcosGerminados IS NOT NULL
-        GROUP BY cs.descripcion, c.nombreCultivo, rg.linea
+        GROUP BY cs.descripcion, cs.ciclo, c.nombreCultivo, rg.linea
         ORDER BY cs.descripcion ASC, rg.linea ASC;
         ";
 
         try {
             // Ejecutar la consulta con el parámetro proporcionado
             $resultados = Yii::$app->db->createCommand($query, [
-                ':nombreCultivo' => $nombreCultivo, // Parámetro de filtro
+                ':nombreCultivo' => $nombreCultivo,
             ])->queryAll();
 
-            return $resultados; // Retornar resultados
+            // Procesar los resultados
+            $data = [];
+            foreach ($resultados as $row) {
+                $linea = 'Línea ' . $row['numeroLinea'];  // Formatear como 'Línea X'
+                $numeroCiclo = (int)$row['numeroCiclo'];
+                $porcentajeGerminacion = (float)$row['porcentajeGerminacion']; // Convertir a float
+                $descripcionCiclo = $row['descripcionCiclo'];
+
+                // Inicializar la línea si no existe en el array $data
+                if (!isset($data[$linea])) {
+                    $data[$linea] = [
+                        [],  // Ciclos
+                        [],  // Porcentajes de germinación
+                        []   // Descripciones
+                    ];
+                }
+
+                // Verificar si el ciclo ya existe en el array para esa línea
+                if (!in_array($numeroCiclo, $data[$linea][0])) {
+                    // Agregar los datos del ciclo, porcentaje de germinación y descripción en el array correspondiente
+                    $data[$linea][0][] = $numeroCiclo;           // Ciclo
+                    $data[$linea][1][] = $porcentajeGerminacion; // Porcentaje de germinación
+                    $data[$linea][2][] = $descripcionCiclo;      // Descripción del ciclo
+                }
+            }
+
+            // Devolver los datos organizados
+            return $data;
         } catch (\Exception $e) {
             // Manejo de errores
             Yii::error("Error al obtener datos de germinación: " . $e->getMessage(), __METHOD__);
             return []; // Retornar un arreglo vacío en caso de error
         }
     }
+
+    public static function predecirPorcentajeDeGerminacionByLineas($nombreCultivo)
+    {
+        // Obtener los datos organizados
+        $data = self::obtenerDatosGerminacion($nombreCultivo);
+
+        $predicciones = [];
+
+        // Iterar sobre cada línea
+        foreach ($data as $line => [$samples, $targets]) {
+            // Validar que los datos sean correctos, que haya al menos 2 ciclos y que los targets no contengan valores nulos
+            if (count($samples) > 1 && count($samples) == count($targets)) {
+                // Filtrar los valores nulos tanto en samples como en targets
+                $validSamples = array_filter($samples, function ($ciclo, $index) use ($targets) {
+                    // Asegurarse de que tanto el ciclo (sample) como el gramaje (target) no sean nulos
+                    return $ciclo !== null && $targets[$index] !== null;
+                }, ARRAY_FILTER_USE_BOTH);
+
+                $validTargets = array_filter($targets, function ($target) {
+                    return $target !== null;
+                });
+
+                // Si después de filtrar quedan suficientes datos, proceder
+                if (count($validSamples) > 1 && count($validSamples) == count($validTargets)) {
+                    // Crear una nueva instancia de la regresión por mínimos cuadrados
+                    $regression = new LeastSquares();
+
+                    // Convertir las muestras a formato adecuado (matriz 2D)
+                    $validSamples = array_map(function ($ciclo) {
+                        return [$ciclo]; // Cada ciclo es una muestra individual
+                    }, $validSamples);
+
+                    // Entrenar el modelo con las muestras y los targets (gramajes)
+                    $regression->train($validSamples, $validTargets);
+
+                    // Predecir el gramaje para el ciclo 5
+                    $prediction = $regression->predict([[5]]); // Ciclo 5 como entrada
+
+                    // Guardar la predicción en el array
+                    $predicciones[$line] = round($prediction[0], 2);
+                } else {
+                    // Si no hay suficientes datos válidos, se asigna un valor nulo
+                    $predicciones[$line] = null;
+                }
+            } else {
+                // Si los datos no son válidos, se asigna un valor nulo
+                $predicciones[$line] = null;
+            }
+        }
+
+        return $predicciones;
+    }
+
+
 
 
 
