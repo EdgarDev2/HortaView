@@ -354,25 +354,25 @@ class DbHandler
     {
         // Construcción de la consulta SQL
         $query = "
-    SELECT 
-        cs.descripcion AS descripcionCiclo, 
-        cs.fechaInicio AS inicioCiclo, 
-        cs.ciclo AS numeroCiclo, 
-        cultivo.nombreCultivo AS NombreSembrado, 
-        SUM($tabla.volumen) AS totalLitrosConsumidos
-    FROM 
-        $tabla
-    INNER JOIN 
-        cultivo ON $tabla.cultivoId = cultivo.cultivoId
-    INNER JOIN 
-        ciclosiembra cs ON cultivo.cicloId = cs.cicloId
-    WHERE 
-        cultivo.nombreCultivo = :nombreCultivo
-    GROUP BY 
-        cs.descripcion, cs.fechaInicio, cs.ciclo, cultivo.nombreCultivo
-    ORDER BY 
-        cs.fechaInicio ASC;
-    ";
+        SELECT 
+            cs.descripcion AS descripcionCiclo, 
+            cs.fechaInicio AS inicioCiclo, 
+            cs.ciclo AS numeroCiclo, 
+            cultivo.nombreCultivo AS NombreSembrado, 
+            SUM($tabla.volumen) AS totalLitrosConsumidos
+        FROM 
+            $tabla
+        INNER JOIN 
+            cultivo ON $tabla.cultivoId = cultivo.cultivoId
+        INNER JOIN 
+            ciclosiembra cs ON cultivo.cicloId = cs.cicloId
+        WHERE 
+            cultivo.nombreCultivo = :nombreCultivo
+        GROUP BY 
+            cs.descripcion, cs.fechaInicio, cs.ciclo, cultivo.nombreCultivo
+        ORDER BY 
+            cs.fechaInicio ASC;
+        ";
 
         try {
             // Ejecutar la consulta con el parámetro

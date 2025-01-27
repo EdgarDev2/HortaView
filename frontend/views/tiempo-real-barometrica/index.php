@@ -20,11 +20,11 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
 ?>
 <div class="tiempo-real-presion-barometrica-index">
     <!-- Mostrar el gráfico de predicciones vs valores reales -->
-    <div class="card mt-4">
+    <div class="card mt-0">
         <div class="card-header bg-primary text-white">
             <h4>Tiempo real presión barométrica</h4>
         </div>
-        <div class="row mt-4">
+        <div class="row mt-0 p-2">
             <!-- Botones de gráfico y filtros -->
             <div class="col-md-12 d-flex flex-wrap align-items-center gap-2">
                 <!-- Botones de tipo de gráfico -->
@@ -58,8 +58,8 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
             </div>
         </div>-->
         </div>
-        <div class="card-body">
-            <canvas id="graficoPresionBarometrica" class="mt-4"></canvas>
+        <div class="card-body bg-light">
+            <canvas id="graficoPresionBarometrica" class="mt-0"></canvas>
         </div>
     </div>
     <!-- Pasamos los datos de la sesión a JS -->

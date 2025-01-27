@@ -15,13 +15,13 @@ $inputDate = 'form-control placeholder-wave bg-transparent text-secondary';
 $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light rounded';
 ?>
 <div class="prediccion-peso-produccion-final-index">
-    <div class="card mt-4">
+    <div class="card mt-0">
         <div class="card-header bg-primary text-white">
             <h4 class="mb-0">Peso final de la producción (siguiente ciclo).</h4>
         </div>
 
         <!-- Filtros y opciones de gráficos -->
-        <div class="row mt-4">
+        <div class="row p-2 mt-0 border-bottom">
             <div class="col-md-12 d-flex flex-wrap align-items-center gap-2">
                 <!-- Botones para tipo de gráfico -->
                 <div class="btn-group" role="group" aria-label="Opciones de gráficos">
@@ -56,7 +56,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
         </div>
 
         <!-- Gráfico -->
-        <div class="card-body">
+        <div class="card-body bg-light">
             <div class="">
                 <div class="chart-container" style="position: relative; height: 70vh; width: 100%;">
                     <canvas id="grafico-consolidado"></canvas>

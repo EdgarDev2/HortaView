@@ -16,11 +16,11 @@ use yii\helpers\Html;
 
 <div class="filtrar-humedad-por-rango-index">
     <!-- Mostrar el gráfico de predicciones vs valores reales -->
-    <div class="card mt-4">
-        <div class="card-header bg-warning text-dark">
+    <div class="card mt-0">
+        <div class="card-header bg-primary text-white">
             <h4>Todos los registros de humedad del suelo</h4>
         </div>
-        <div class="row mt-4">
+        <div class="row p-2 border-bottom">
             <!-- Botones de gráfico y filtros -->
             <div class="col-md-12 d-flex flex-wrap align-items-center gap-2">
                 <!-- Botones de tipo de gráfico -->
@@ -64,8 +64,10 @@ use yii\helpers\Html;
                 <?= Html::a('Regresar', ['/filtrar-humedad-por-rango/index'], ['class' => 'btn btn-outline-primary btn-sm border-0']) ?>
             </div>
         </div>
-        <div class="card-body">
-            <canvas id="graficoCama" class="mt-4"></canvas>
+        <div class="card-body bg-light">
+            <div class="chart-container" style="position: relative; height: 70vh; width: 100%;">
+                <canvas id="graficoCama" class="mt-0"></canvas>
+            </div>
         </div>
     </div>
     <!-- Pasamos los datos de la sesión a JS -->
