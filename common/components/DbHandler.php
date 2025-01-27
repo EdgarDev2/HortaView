@@ -350,6 +350,120 @@ class DbHandler
         return $predicciones;
     }
 
+    public static function obtenerConsumoTotalAgua($nombreCultivo, $tabla)
+    {
+        // Construcción de la consulta SQL
+        $query = "
+    SELECT 
+        cs.descripcion AS descripcionCiclo, 
+        cs.fechaInicio AS inicioCiclo, 
+        cs.ciclo AS numeroCiclo, 
+        cultivo.nombreCultivo AS NombreSembrado, 
+        SUM($tabla.volumen) AS totalLitrosConsumidos
+    FROM 
+        $tabla
+    INNER JOIN 
+        cultivo ON $tabla.cultivoId = cultivo.cultivoId
+    INNER JOIN 
+        ciclosiembra cs ON cultivo.cicloId = cs.cicloId
+    WHERE 
+        cultivo.nombreCultivo = :nombreCultivo
+    GROUP BY 
+        cs.descripcion, cs.fechaInicio, cs.ciclo, cultivo.nombreCultivo
+    ORDER BY 
+        cs.fechaInicio ASC;
+    ";
+
+        try {
+            // Ejecutar la consulta con el parámetro
+            $resultados = Yii::$app->db->createCommand($query, [
+                ':nombreCultivo' => $nombreCultivo,
+            ])->queryAll();
+
+            // Procesar los resultados
+            $data = [];
+            foreach ($resultados as $row) {
+                $linea = $row['NombreSembrado'];  // El nombre del cultivo como "Línea X"
+                $numeroCiclo = (int)$row['numeroCiclo']; // Número del ciclo
+                $totalLitrosConsumidos = (float)$row['totalLitrosConsumidos']; // Litros consumidos
+                $descripcionCiclo = $row['descripcionCiclo']; // Descripción del ciclo
+
+                // Inicializar la línea si no existe en el array $data
+                if (!isset($data[$linea])) {
+                    $data[$linea] = [
+                        [],  // Ciclos
+                        [],  // Litros consumidos
+                        []   // Descripciones
+                    ];
+                }
+
+                // Agregar los datos en el array correspondiente
+                $data[$linea][0][] = $numeroCiclo;            // Ciclo
+                $data[$linea][1][] = $totalLitrosConsumidos;  // Litros consumidos
+                $data[$linea][2][] = $descripcionCiclo;       // Descripción del ciclo
+            }
+
+            // Devolver los datos organizados
+            return $data;
+        } catch (\Exception $e) {
+            // Manejo de errores
+            Yii::error("Error al obtener datos de consumo de agua: " . $e->getMessage(), __METHOD__);
+            return []; // Retornar un arreglo vacío en caso de error
+        }
+    }
+
+
+    public static function predecirConsumoAgua($nombreCultivo, $tabla)
+    {
+        $data = self::obtenerConsumoTotalAgua($nombreCultivo, $tabla);
+
+        $predicciones = [];
+
+        // Iterar sobre cada línea
+        foreach ($data as $line => [$samples, $targets]) {
+            // Validar que los datos sean correctos, que haya al menos 2 ciclos y que los targets no contengan valores nulos
+            if (count($samples) > 1 && count($samples) == count($targets)) {
+                // Filtrar los valores nulos tanto en samples como en targets
+                $validSamples = array_filter($samples, function ($ciclo, $index) use ($targets) {
+                    // Asegurarse de que tanto el ciclo (sample) como el gramaje (target) no sean nulos
+                    return $ciclo !== null && $targets[$index] !== null;
+                }, ARRAY_FILTER_USE_BOTH);
+
+                $validTargets = array_filter($targets, function ($target) {
+                    return $target !== null;
+                });
+
+                // Si después de filtrar quedan suficientes datos, proceder
+                if (count($validSamples) > 1 && count($validSamples) == count($validTargets)) {
+                    // Crear una nueva instancia de la regresión por mínimos cuadrados
+                    $regression = new LeastSquares();
+
+                    // Convertir las muestras a formato adecuado (matriz 2D)
+                    $validSamples = array_map(function ($ciclo) {
+                        return [$ciclo]; // Cada ciclo es una muestra individual
+                    }, $validSamples);
+
+                    // Entrenar el modelo con las muestras y los targets (gramajes)
+                    $regression->train($validSamples, $validTargets);
+
+                    // Predecir el gramaje para el ciclo 5
+                    $prediction = $regression->predict([[5]]); // Ciclo 5 como entrada
+
+                    // Guardar la predicción en el array
+                    $predicciones[$line] = round($prediction[0], 2);
+                } else {
+                    // Si no hay suficientes datos válidos, se asigna un valor nulo
+                    $predicciones[$line] = null;
+                }
+            } else {
+                // Si los datos no son válidos, se asigna un valor nulo
+                $predicciones[$line] = null;
+            }
+        }
+
+        return $predicciones;
+    }
+
 
 
 

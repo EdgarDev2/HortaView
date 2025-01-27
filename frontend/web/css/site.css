@@ -101,3 +101,9 @@ a.desc:after {
 {
     text-decoration: none;
 }
+
+.mi-navbar {
+    background-color: #FF9F40; /* Cambia el color de fondo */
+    border-bottom: 3px solid #FFCD56; /* Agrega un borde inferior */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Aplica sombra */
+}

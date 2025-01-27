@@ -5,7 +5,7 @@ $this->registerCssFile('@web/css/evidencias.css');
 use yii\helpers\Html;
 ?>
 <div class="variables-ambientales-index">
-    <h1 class="display-5 text-success text-center mb-3"><?= Html::encode($this->title) ?></h1>
+    <h1 class="display-5 text-dark text-center mb-3"><?= Html::encode($this->title) ?></h1>
     <div class="body">
         <div class="collage-container">
             <!-- Replace the src attributes with the URLs of your remote images -->

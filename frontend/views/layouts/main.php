@@ -33,10 +33,10 @@ AppAsset::register($this);
         <?php
 
         NavBar::begin([
-            'brandLabel' => Html::img('@web/images/house-fill-light.svg', ['alt' => Yii::$app->name]) . ' ' . 'HorView',
+            'brandLabel' => Html::img('@web/images/house-fill2.svg', ['alt' => Yii::$app->name]) . ' ' . 'HorView',
             'brandUrl' => Yii::$app->user->isGuest ? Yii::$app->homeUrl : Url::to(['/variables-ambientales/index']), // URL diferente según el estado de autenticación
             'options' => [
-                'class' => 'navbar navbar-expand-md navbar-dark bg-success fixed-top',
+                'class' => 'navbar navbar-expand-md bg-light text-dark fixed-top',
             ],
         ]);
 
@@ -122,27 +122,27 @@ AppAsset::register($this);
 
         // Bloque para iniciar sesión
         $currentUrl = Url::current();
-        $defaultColor = '#A8D5BA';
-        $activeColor = '#ffffff';
-        $this->registerCss("a.custom-link:hover {color: #C5E1D4 !important;}");
-
+        $defaultColor = '#6C757D'; // #A8D5BA
+        $activeColor = '#212529'; //#ffffff
+        $this->registerCss("a.custom-link:hover {color:rgb(100, 187, 146) !important;}");
+        $signupUrl = Url::to(['/site/signup']);
+        $isSignupActive = $currentUrl === $signupUrl;
+        $targetUrls = [Url::to(['/perfil/view']), Url::to(['/perfil/create'])];
+        $isActive = in_array($currentUrl, $targetUrls);
         if (Yii::$app->user->isGuest) {
-            $signupUrl = Url::to(['/site/signup']);
-            $isSignupActive = $currentUrl === $signupUrl;
             echo Html::tag('div', Html::a('Registrarse', ['/site/signup'], ['class' => 'custom-link btn bg-transparent border-0 text-decoration-none', 'style' => 'color: ' . ($isSignupActive ? $activeColor : $defaultColor)]), ['class' => 'd-flex']);
 
             $loginUrl = Url::to(['/site/login']);
             $isLoginActive = $currentUrl === $loginUrl;
             echo Html::tag('div', Html::a('Login', ['/site/login'], ['class' => 'custom-link btn bg-transparent border-0 text-decoration-none', 'style' => 'color: ' . ($isLoginActive ? $activeColor : $defaultColor)]), ['class' => 'd-flex']);
         } else {
-            $targetUrls = [Url::to(['/perfil/view']), Url::to(['/perfil/create'])];
-            $isActive = in_array($currentUrl, $targetUrls);
+            /*
             echo Html::tag('div', Html::a('Perfil', ['/perfil/view'], ['class' => 'custom-link btn bg-transparent border-0 text-decoration-none', 'style' => 'color: ' . ($isActive ? $activeColor : $defaultColor)]), ['class' => 'd-flex']);
-
+            */
             echo Html::beginForm(['/site/logout'], 'post', ['class' => 'd-flex'])
                 . Html::submitButton(
                     'Salir (' . Yii::$app->user->identity->username . ')',
-                    ['class' => 'btn btn-link logout text-decoration-none']
+                    ['class' => 'btn btn-link logout text-decoration-none', 'style' => 'color: ' . ($isActive ? $activeColor : $defaultColor)]
                 )
                 . Html::endForm();
         }
@@ -166,7 +166,7 @@ AppAsset::register($this);
     <footer class="footer mt-auto py-3 text-muted">
         <div class="container">
             <p class="float-start">&copy; Edgar Manuel Poot Ku <?= date('Y') ?></p>
-            <p class="float-end">Instituto Tenológico Superior de Valladolid</p>
+            <p class="float-end">&copy; Instituto Tenológico Superior de Valladolid <?= date('Y') ?></p>
         </div>
     </footer>
 
