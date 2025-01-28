@@ -246,22 +246,25 @@ class DbHandler
     {
         // Construcción de la consulta SQL
         $query = "
-        SELECT 
-            cs.descripcion AS descripcionCiclo,
-            cs.ciclo AS numeroCiclo,
-            c.nombreCultivo,
-            rg.linea AS numeroLinea,
-            MAX(rg.numeroZurcosGerminados) AS maximoZurcosGerminados,
-            (MAX(rg.numeroZurcosGerminados) / 7) * 100 AS porcentajeGerminacion
-        FROM ciclosiembra cs
-        LEFT JOIN cultivo c ON cs.cicloId = c.cicloId
-        LEFT JOIN registrogerminacion rg ON c.cultivoId = rg.cultivoId
-        WHERE c.nombreCultivo = :nombreCultivo
-        AND rg.linea IS NOT NULL
-        AND rg.numeroZurcosGerminados IS NOT NULL
-        GROUP BY cs.descripcion, cs.ciclo, c.nombreCultivo, rg.linea
-        ORDER BY cs.descripcion ASC, rg.linea ASC;
+            SELECT 
+                cs.descripcion AS descripcionCiclo,
+                cs.ciclo AS numeroCiclo,
+                c.nombreCultivo,
+                rg.linea AS numeroLinea,
+                MAX(rg.numeroZurcosGerminados) AS maximoZurcosGerminados,
+                c.surcosSembrados,
+                (MAX(rg.numeroZurcosGerminados) / c.surcosSembrados) * 100 AS porcentajeGerminacion
+            FROM ciclosiembra cs
+            LEFT JOIN cultivo c ON cs.cicloId = c.cicloId
+            LEFT JOIN registrogerminacion rg ON c.cultivoId = rg.cultivoId
+            WHERE c.nombreCultivo = :nombreCultivo
+            AND rg.linea IS NOT NULL
+            AND rg.numeroZurcosGerminados IS NOT NULL
+            AND c.surcosSembrados > 0
+            GROUP BY cs.descripcion, cs.ciclo, c.nombreCultivo, rg.linea, c.surcosSembrados
+            ORDER BY cs.descripcion ASC, rg.linea ASC;
         ";
+
 
         try {
             // Ejecutar la consulta con el parámetro proporcionado

@@ -27,17 +27,8 @@ $this->title = 'Predicción porcentaje de germinación por línea para el siguie
             <div class="col-md-12 d-flex flex-wrap align-items-center gap-2">
                 <!-- Botones para tipo de gráfico -->
                 <div class="btn-group" role="group" aria-label="Opciones de gráficos">
-                    <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Lineal" onclick="cambiarTipoGrafico('line')">
-                        <i class="fas fa-chart-line"></i> Lineal
-                    </button>
-                    <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Barra" onclick="cambiarTipoGrafico('bar')">
-                        <i class="fas fa-chart-bar"></i> Barra
-                    </button>
-                    <button class="<?= $btnClass ?>" type="button" title="Gráfico de tipo Radar" onclick="cambiarTipoGrafico('radar')">
-                        <i class="fas fa-chart-pie"></i> Radar
-                    </button>
-                    <button class="<?= $btnDownloadClass ?>" type="button" title="Descargar gráfico como imagen" onclick="descargarImagen('graficoCama', 'grafico_cama.png')">
-                        <i class="fas fa-download"></i> Descargar
+                    <button class="<?= $btnDownloadClass ?>" type="button" title="Descargar gráfico como imagen" onclick="descargarImagen('grafico-consolidado', 'predicción_germinación.png')">
+                        <i class="fas fa-download"></i> Descargar gráfica
                     </button>
                 </div>
                 <!-- Selector de cama -->
@@ -221,4 +212,11 @@ $this->title = 'Predicción porcentaje de germinación por línea para el siguie
             cargarDatos(camaSeleccionada);
         });
     });
+    // Función para descargar el gráfico
+    window.descargarImagen = function(canvasId, nombreArchivo) {
+        let link = document.createElement('a');
+        link.href = document.getElementById(canvasId).toDataURL();
+        link.download = nombreArchivo;
+        link.click();
+    };
 </script>
