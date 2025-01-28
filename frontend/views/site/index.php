@@ -14,8 +14,8 @@ $this->title = 'Inicio';
             <div class="col-12 col-md-6 d-flex flex-column justify-content-center">
                 <div class="text text-center text-md-start">
                     <h1 class="display-4 text-dark">MONITOREO WEB EN TIEMPO REAL DE HORTALIZAS</h1>
-                    <p class="lead text-dark">En el Instituto Tecnológico Superior de Valladolid se elaboró este proyecto con el fin de monitorear
-                        las variables ambientales cruciales...</p>
+                    <p class="lead text-dark">En el Instituto Tecnológico Superior de Valladolid se llevó
+                        a cabo este proyecto con el objetivo de monitorear las variables ambientales fundamentales para el cultivo ...</p>
                     <div class="buttons mt-4">
                         <?= Html::a('SEGUIR LEYENDO', ['/site/about'], ['class' => 'btn btn-outline-success btn-lg', 'title' => 'Más información sobre el proyecto']) ?>
                     </div>
