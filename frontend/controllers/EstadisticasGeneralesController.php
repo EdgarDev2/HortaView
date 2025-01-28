@@ -46,6 +46,7 @@ class EstadisticasGeneralesController extends Controller
         $cicloSeleccionado = $resultados['cicloSeleccionado'];
         $fechaInicio = $resultados['fechaInicio'];
         $fechaFinal = $resultados['fechaFinal'];
+        $descripcionCiclo = $resultados['descripcion'];
 
         // Obtener cultivos asociados al ciclo seleccionado
         $cultivos = Cultivo::find()
@@ -88,7 +89,7 @@ class EstadisticasGeneralesController extends Controller
             $metricasPorCultivo[$cultivo['cultivoId']] = $this->calcularMetricasRiego($datosCultivo);
         }
 
-        $datosGrafico = [
+        /*$datosGrafico = [
             'labels' => array_column($cultivos, 'nombreCultivo'),
             'promedios' => array_map(function ($cultivo) use ($metricasPorCultivo) {
                 return $metricasPorCultivo[$cultivo['cultivoId']]['promedio'];
@@ -102,7 +103,24 @@ class EstadisticasGeneralesController extends Controller
             'desviaciones' => array_map(function ($cultivo) use ($metricasPorCultivo) {
                 return $metricasPorCultivo[$cultivo['cultivoId']]['desviacion'];
             }, $cultivos),
+        ];*/
+        $datosGrafico = [
+            'labels' => array_column($cultivos, 'nombreCultivo'),
+            'promedios' => array_map(function ($cultivo) use ($metricasPorCultivo) {
+                return $metricasPorCultivo[$cultivo['cultivoId']]['promedio'];
+            }, $cultivos),
+            'maximos' => array_map(function ($cultivo) use ($metricasPorCultivo) {
+                return $metricasPorCultivo[$cultivo['cultivoId']]['maximo'];
+            }, $cultivos),
+            'minimos' => array_map(function ($cultivo) use ($metricasPorCultivo) {
+                return $metricasPorCultivo[$cultivo['cultivoId']]['minimo'];
+            }, $cultivos),
+            'desviaciones' => array_map(function ($cultivo) use ($metricasPorCultivo) {
+                return $metricasPorCultivo[$cultivo['cultivoId']]['desviacion'];
+            }, $cultivos),
+            'descripcionCiclo' => $descripcionCiclo, // Agregar la descripción del ciclo
         ];
+
 
 
         return $this->render('index', [
@@ -115,7 +133,35 @@ class EstadisticasGeneralesController extends Controller
         ]);
     }
 
-    private function calcularMetricasRiego($datos)
+    public function calcularMetricasRiego($datosCultivo)
+    {
+        $volumenes = array_column($datosCultivo, 'volumen'); // Extraer los valores de volumen
+
+        return [
+            'promedio' => count($volumenes) > 0 ? array_sum($volumenes) / count($volumenes) : 0, // Promedio
+            'maximo' => count($volumenes) > 0 ? max($volumenes) : 0, // Valor máximo
+            'minimo' => count($volumenes) > 0 ? min($volumenes) : 0, // Valor mínimo
+            'desviacion' => $this->calcularDesviacion($volumenes), // Desviación estándar
+        ];
+    }
+
+    private function calcularDesviacion($valores)
+    {
+        $n = count($valores);
+        if ($n === 0) {
+            return 0; // Si no hay datos, la desviación es 0
+        }
+
+        $media = array_sum($valores) / $n; // Calcular la media
+        $sumaDesviaciones = array_reduce($valores, function ($carry, $valor) use ($media) {
+            return $carry + pow($valor - $media, 2); // Suma de las diferencias al cuadrado
+        }, 0);
+
+        return sqrt($sumaDesviaciones / $n); // Raíz cuadrada de la media de las diferencias al cuadrado
+    }
+
+
+    /*private function calcularMetricasRiego($datos)
     {
         if (empty($datos)) {
             return [
@@ -156,5 +202,5 @@ class EstadisticasGeneralesController extends Controller
             'promedioMaximos' => $promedioMaximos,
             'desviacion' => $desviacion,
         ];
-    }
+    }*/
 }

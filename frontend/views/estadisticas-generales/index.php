@@ -3,6 +3,8 @@ $this->title = 'Eficiencia de sistemas de riego manual vs automático';
 
 use yii\helpers\Html;
 use practically\chartjs\widgets\Chart as WidgetsChart;
+
+$descripcionCiclo = $datosGrafico['descripcionCiclo'];
 ?>
 <div class="estadisticas-generales-index">
     <div class="container mt-4">
@@ -11,7 +13,7 @@ use practically\chartjs\widgets\Chart as WidgetsChart;
         </div>
         <!-- Resumen del Ciclo -->
         <div class="alert alert-info shadow-sm rounded p-4">
-            <h1 class="display-5 text-dark text-center">Eficiencia de sistemas de riego manual vs automático</h1>
+            <h1 class="display-5 text-dark text-center">Eficiencia de sistemas de riego manual vs automático, <?= Html::encode($descripcionCiclo) ?></h1>
             <p><strong>Fecha de inicio del ciclo:</strong> <?= Html::encode($fechaInicio) ?></p>
             <p><strong>Fecha de fin del ciclo:</strong> <?= Html::encode($fechaFin) ?></p>
         </div>
@@ -27,8 +29,8 @@ use practically\chartjs\widgets\Chart as WidgetsChart;
                         <tr>
                             <th>Cultivo</th>
                             <th>Promedio General de Volumen (L)</th>
-                            <th>Promedio de Mínimos (L)</th>
-                            <th>Promedio de Máximos (L)</th>
+                            <th>Mínimos (L)</th> <!--Promedio de Mínimos (L)-->
+                            <th>Máximos (L)</th> <!--Promedio de Máximos (L)-->
                             <th>Desviación Estándar (L)</th>
                         </tr>
                     </thead>
@@ -37,8 +39,8 @@ use practically\chartjs\widgets\Chart as WidgetsChart;
                             <tr>
                                 <td><?= Html::encode($cultivo['nombreCultivo']) ?></td>
                                 <td><?= number_format($metricasPorCultivo[$cultivo['cultivoId']]['promedio'], 2) ?> l</td>
-                                <td><?= number_format($metricasPorCultivo[$cultivo['cultivoId']]['promedioMinimos'], 2) ?> l</td>
-                                <td><?= number_format($metricasPorCultivo[$cultivo['cultivoId']]['promedioMaximos'], 2) ?> l</td>
+                                <td><?= number_format($metricasPorCultivo[$cultivo['cultivoId']]['minimo'], 2) ?> l</td><!--promedioMinimos-->
+                                <td><?= number_format($metricasPorCultivo[$cultivo['cultivoId']]['maximo'], 2) ?> l</td><!--promedioMaximos-->
                                 <td><?= number_format($metricasPorCultivo[$cultivo['cultivoId']]['desviacion'], 2) ?> l</td>
                             </tr>
                         <?php endforeach; ?>
@@ -58,13 +60,13 @@ use practically\chartjs\widgets\Chart as WidgetsChart;
 
                 ],
                 [
-                    'data' => $datosGrafico['promedioMinimos'], // Datos de promedios
-                    'label' => 'Promedio de mínimos (L)', // Etiqueta del conjunto de datos
+                    'data' => $datosGrafico['minimos'], // Datos de promedios promedioMinimos
+                    'label' => 'Mínimos (L)', // Etiqueta del conjunto de datos era Promedio de mínimos (L)
 
                 ],
                 [
-                    'data' => $datosGrafico['promedioMaximos'], // Datos de promedios
-                    'label' => 'Promedio de máximos (L)', // Etiqueta del conjunto de datos
+                    'data' => $datosGrafico['maximos'], // Datos de promedios promedioMaximos
+                    'label' => 'Máximos (L)', // Etiqueta del conjunto de datos era 'Promedio de máximos (L)
 
                 ],
                 [
@@ -78,14 +80,14 @@ use practically\chartjs\widgets\Chart as WidgetsChart;
                 'plugins' => [
                     'title' => [
                         'display' => true,
-                        'text' => 'Promedios de Consumo de Agua por Cultivo',
+                        'text' => 'Consumo de Agua por Cultivo',
                     ],
                 ],
                 'scales' => [
                     'x' => [
                         'title' => [
                             'display' => true,
-                            'text' => 'Cultivos',
+                            'text' => 'Cultivos que pertenencen al ciclo: ' . $descripcionCiclo,
                         ],
                         'type' => 'category',
                         'labels' => $datosGrafico['labels'], // Etiquetas para el eje X
@@ -93,7 +95,7 @@ use practically\chartjs\widgets\Chart as WidgetsChart;
                     'y' => [
                         'title' => [
                             'display' => true,
-                            'text' => 'Volumen (L)',
+                            'text' => 'Volumen (L) de agua consumido por ciclo',
                         ],
                         'beginAtZero' => true,
                     ],
@@ -130,8 +132,8 @@ use practically\chartjs\widgets\Chart as WidgetsChart;
             tableRows.push([
                 "<?= Html::encode($cultivo['nombreCultivo']) ?>",
                 "<?= number_format($metricasPorCultivo[$cultivo['cultivoId']]['promedio'], 2) ?>",
-                "<?= number_format($metricasPorCultivo[$cultivo['cultivoId']]['promedioMinimos'], 2) ?>",
-                "<?= number_format($metricasPorCultivo[$cultivo['cultivoId']]['promedioMaximos'], 2) ?>",
+                "<?= number_format($metricasPorCultivo[$cultivo['cultivoId']]['minimo'], 2) ?>", //promedioMinimos
+                "<?= number_format($metricasPorCultivo[$cultivo['cultivoId']]['maximo'], 2) ?>", //promedioMaximos
                 "<?= number_format($metricasPorCultivo[$cultivo['cultivoId']]['desviacion'], 2) ?>"
             ]);
         <?php endforeach; ?>

@@ -18,7 +18,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
 <div class="filtrar-humedad-por-rango-index">
     <div class="card mt-0">
         <div class="card-header bg-primary text-white text-start">
-            <h4 class="mb-0">Filtrar humedad del suelo por día.</h4>
+            <h4 class="mb-0">Filtrar humedad del suelo por rango de fecha.</h4>
         </div>
         <!-- Botones de gráfico y filtros -->
         <div class="row p-2 border-bottom">
@@ -52,10 +52,10 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                 <div class="input-group input-group-sm" style="max-width: 162px;">
                     <select id="camaId" class="<?= $selectPlace ?>" title="Selecciona cama">
                         <option value="" disabled selected>Seleccionar cama</option>
-                        <option value="1">Ka'anche' 1</option>
-                        <option value="2">Ka'anche' 2</option>
-                        <option value="3">Ka'anche' 3</option>
-                        <option value="4">Ka'anche' 4</option>
+                        <option value="1">Ka'anche' 1 cilantro automático</option>
+                        <option value="2">Ka'anche' 2 rábano automático</option>
+                        <option value="3">Ka'anche' 3 cilantro manual</option>
+                        <option value="4">Ka'anche' 4 rábano manual</option>
                     </select>
                 </div>
                 <!-- Botón Filtrar -->
@@ -103,7 +103,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                 }, (_, i) => i + ':00 hrs'), // Horas
                 datasets: [{
                         label: 'Mínimo',
-                        data: data.promedios_minimos,
+                        data: data.minimos,
                         borderColor: '#36A2EB',
                         backgroundColor: 'rgba(54, 162, 235, 0.4)',
                         fill: tipoGrafico === 'line' ? false : true,
@@ -121,7 +121,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                     },
                     {
                         label: 'Máximo',
-                        data: data.promedios_maximos,
+                        data: data.maximos,
                         borderColor: '#FF6384',
                         backgroundColor: 'rgba(255, 99, 132, 0.4)',
                         fill: tipoGrafico === 'line' ? false : true,

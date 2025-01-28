@@ -26,7 +26,7 @@ class DbHandler
         FROM CicloSiembra
         ORDER BY ciclo ASC")->queryAll();
 
-        if (empty($ciclos)) { // Si la base de datos esta vacío.
+        if (empty($ciclos)) { // Si la base de datos está vacío.
             Yii::$app->session->setFlash('error', 'No hay ciclos disponibles en este momento.');
         }
 
@@ -40,27 +40,33 @@ class DbHandler
         $ciclo = Yii::$app->db->createCommand("
         SELECT 
             cicloId, 
+            descripcion,
             DATE_FORMAT(fechaInicio, '%Y-%m-%d') as fechaInicio, 
             DATE_FORMAT(fechaFin, '%Y-%m-%d') as fechaFin
         FROM CicloSiembra
         WHERE cicloId = :cicloId
         LIMIT 1")->bindValue(':cicloId', $cicloSeleccionado)->queryOne();
 
-        // Determinar las fechas de inicio y final.
+        // Determinar las fechas de inicio, final y la descripción.
         if ($ciclo) {
             $fechaInicio = $ciclo['fechaInicio'];
             $fechaFinal = $ciclo['fechaFin'];
+            $descripcion = $ciclo['descripcion'];
         } else {
             $fechaInicio = $fechaActual;
             $fechaFinal = $fechaActual;
+            $descripcion = null; // No hay descripción si no se encuentra el ciclo.
         }
+
         // Retornar los valores a los controladores de las vistas.
         return [
             'cicloSeleccionado' => $cicloSeleccionado,
             'fechaInicio' => $fechaInicio,
             'fechaFinal' => $fechaFinal,
+            'descripcion' => $descripcion,
         ];
     }
+
 
 
     public static function guardarCicloEnSesion($cicloId)
