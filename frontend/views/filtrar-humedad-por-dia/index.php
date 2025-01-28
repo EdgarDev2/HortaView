@@ -49,10 +49,10 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                 <div class="input-group input-group-sm" style="max-width: 162px;">
                     <select id="camaId" class="<?= $selectPlace ?>" title="Selecciona cama">
                         <option value="" disabled selected>Seleccionar cama</option>
-                        <option value="1">Ka'anche' 1</option>
-                        <option value="2">Ka'anche' 2</option>
-                        <option value="3">Ka'anche' 3</option>
-                        <option value="4">Ka'anche' 4</option>
+                        <option value="1">Ka'anche' 1 cilantro automático</option>
+                        <option value="2">Ka'anche' 2 rábano automático</option>
+                        <option value="3">Ka'anche' 3 cilantro manual</option>
+                        <option value="4">Ka'anche' 4 rábano manual</option>
                     </select>
                 </div>
                 <!-- Botón Filtrar -->
