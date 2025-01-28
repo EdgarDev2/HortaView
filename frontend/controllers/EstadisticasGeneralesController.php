@@ -118,8 +118,15 @@ class EstadisticasGeneralesController extends Controller
             'desviaciones' => array_map(function ($cultivo) use ($metricasPorCultivo) {
                 return $metricasPorCultivo[$cultivo['cultivoId']]['desviacion'];
             }, $cultivos),
-            'descripcionCiclo' => $descripcionCiclo, // Agregar la descripción del ciclo
+            'totales' => array_map(function ($cultivo) use ($metricasPorCultivo) {
+                return $metricasPorCultivo[$cultivo['cultivoId']]['total'];
+            }, $cultivos),
+            'indicesEficiencia' => array_map(function ($cultivo) use ($metricasPorCultivo) {
+                return $metricasPorCultivo[$cultivo['cultivoId']]['indiceEficiencia'];  // Usamos el índice de eficiencia calculado
+            }, $cultivos),
+            'descripcionCiclo' => $descripcionCiclo,
         ];
+
 
 
 
@@ -137,13 +144,27 @@ class EstadisticasGeneralesController extends Controller
     {
         $volumenes = array_column($datosCultivo, 'volumen'); // Extraer los valores de volumen
 
+        $totalConsumido = count($volumenes) > 0 ? array_sum($volumenes) : 0; // Total de agua consumida
+        $desviacion = $this->calcularDesviacion($volumenes); // Desviación estándar
+
+        // Calcular el promedio
+        $promedio = count($volumenes) > 0 ? $totalConsumido / count($volumenes) : 0;
+
+        // Calcular el índice de eficiencia ponderado
+        // El peso de la desviación estándar puede ajustarse según lo que desees priorizar
+        $indiceEficiencia = $promedio > 0 ? ($totalConsumido / $promedio) * (1 + ($desviacion / 100)) : 0;
+
         return [
-            'promedio' => count($volumenes) > 0 ? array_sum($volumenes) / count($volumenes) : 0, // Promedio
+            'promedio' => $promedio, // Promedio
             'maximo' => count($volumenes) > 0 ? max($volumenes) : 0, // Valor máximo
             'minimo' => count($volumenes) > 0 ? min($volumenes) : 0, // Valor mínimo
-            'desviacion' => $this->calcularDesviacion($volumenes), // Desviación estándar
+            'desviacion' => $desviacion, // Desviación estándar
+            'total' => $totalConsumido, // Total de agua consumida
+            'indiceEficiencia' => $indiceEficiencia, // Índice de eficiencia ponderado
         ];
     }
+
+
 
     private function calcularDesviacion($valores)
     {
@@ -157,7 +178,8 @@ class EstadisticasGeneralesController extends Controller
             return $carry + pow($valor - $media, 2); // Suma de las diferencias al cuadrado
         }, 0);
 
-        return sqrt($sumaDesviaciones / $n); // Raíz cuadrada de la media de las diferencias al cuadrado
+        // Para una muestra, usamos (n - 1)
+        return sqrt($sumaDesviaciones / ($n - 1));
     }
 
 
