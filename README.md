@@ -8,23 +8,22 @@
 
 ## Descripción del Proyecto
 
-El proyecto "Monitoreo Web en Tiempo Real de Hortalizas" tiene como objetivo monitorear las variables ambientales cruciales para el cultivo de hortalizas para proporcionar al cliente datos en tiempo real, gráficos predictivos, gráficos de comparación y más.
-Este sistema permitirá optimizar la producción agrícola y controlar la distribución del agua en función a la humedad del suelo.
+Este programa está elaborado con el framework Yii2 de PHP, diseñado para monitorear las condiciones clave del cultivo de hortalizas. Utiliza sensores para medir la humedad del suelo, la humedad y temperatura ambiente, la presión barométrica y el flujo del agua, mostrando los datos en tiempo real a través de gráficas interactivas creadas con Chart.js. El programa permite aplicar filtros para visualizar los datos por rangos específicos y ofrece herramientas para comparar la eficiencia de los sistemas de riego manuales y automáticos. Además, incluye gráficos predictivos, facilitando un análisis detallado de las condiciones de cultivo. Todo esto tiene como objetivo optimizar la producción agrícola y apoyar en la toma de decisiones más informadas. El resultado final de este desarrollo es un sitio web interactivo que permite visualizar y analizar los datos de manera eficiente.
 
 ## Institución
 
 **Escuela**: Instituto Tecnológico Superior de Valladolid  
 **Ciudad**: Valladolid, Yucatán.
 
-## Asesor del Proyecto
+## Asesores del Proyecto
 
 **Asesor interno**: Dr. Jesús Antonio Santos Tejero.  
 **Asesor Externo**: Dr. Rusell Renan Iuit
 Manzanero.
 
-## Estudiantes Participantes
+## Programador
 
-- Ing. Edgar Poot Ku.
+- Ing. Edgar Manuel Poot Ku.
 
 ## Tecnologías Utilizadas
 
@@ -56,7 +55,7 @@ Manzanero.
    ```sql
    composer install
    ```
-5. Configurar el nombre de la BD a "sistemariego" en common/main-local.php en la linea:
+5. Configurar el nombre de la BD a "sistemariego" en common/main-local.php en la linea e insertar "sistemariego":
    ```bash
    'dsn' => 'mysql:host=localhost;dbname=sistemariego',
    ```
@@ -66,7 +65,7 @@ Manzanero.
    ```
 7. Crear la base de datos con MySQL console de WampServer
    ```sql
-   CREATE DATABASE sistemariego CHARACTER SET utf8mb4 COLLATE utf8_unicode_ci;
+   CREATE DATABASE sistemariego CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci;
    ```
 8. Selecciona la base de datos
    ```sql
