@@ -17,7 +17,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
 <div class="prediccion-peso-produccion-final-index">
     <div class="card mt-0">
         <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Peso final de la producción (siguiente ciclo).</h4>
+            <h4 class="mb-0">Peso final de producción por línea (siguiente ciclo).</h4>
         </div>
 
         <!-- Filtros y opciones de gráficos -->
@@ -32,7 +32,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
                 <!-- Selector de cama -->
                 <div class="input-group input-group-sm" style="max-width: 226px;">
                     <select id="camaId" class="<?= $selectPlace ?>" title="Selecciona cama">
-                        <option value="" disabled selected>Seleccionar cama</option>
+                        <option value="" disabled selected>Seleccionar cultivo</option>
                         <option value="Cama 1 cilantro automático">Cama 1 cilantro automático</option>
                         <option value="Cama 2 rábano automático">Cama 2 rábano automático</option>
                         <option value="Cama 3 cilantro manual">Cama 3 cilantro manual</option>
@@ -87,6 +87,7 @@ $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light ro
 
                         const datosHistoricos = response.datos_historicos; // Datos históricos por línea
                         const predicciones = response.predicciones; // Predicciones por línea
+                        console.log(response.datos_historicos);
                         console.log(response.predicciones);
 
                         const etiquetas = Object.keys(datosHistoricos);

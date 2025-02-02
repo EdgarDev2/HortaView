@@ -14,12 +14,24 @@ $inputDate = 'form-control placeholder-wave bg-transparent text-secondary';
 $selectPlace = 'form-select placeholder-wave border-0 text-secondary bg-light rounded';
 
 $this->title = 'Predicción porcentaje de germinación por línea para el siguiente ciclo';
+// Ejemplo para línea 1 cama 1 cilantro automático.
+use Phpml\Regression\LeastSquares;
 
+// Datos de entrenamiento
+$samples = [[1], [2], [3], [4]]; // Ciclos de siembra
+$targets = [21.4286, 42.8571, 100, 100]; // % de germinación
+
+// Crear y entrenar el modelo de regresión lineal
+$regression = new LeastSquares();
+$regression->train($samples, $targets);
+
+// Hacer predicción para el ciclo 5
+$prediction = $regression->predict([[5]]);
 ?>
 <div class="prediccion-germinacion-index container">
     <div class="card mt-0">
         <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Porcentaje de germinación (siguiente ciclo).</h4>
+            <h4 class="mb-0">Porcentaje de germinación por línea (siguiente ciclo).</h4>
         </div>
 
         <!-- Filtros y opciones de gráficos -->
@@ -34,7 +46,7 @@ $this->title = 'Predicción porcentaje de germinación por línea para el siguie
                 <!-- Selector de cama -->
                 <div class="input-group input-group-sm" style="max-width: 226px;">
                     <select id="camaId" class="<?= $selectPlace ?>" title="Selecciona cama">
-                        <option value="" disabled selected>Seleccionar cama</option>
+                        <option value="" disabled selected>Seleccionar cultivo</option>
                         <option value="Cama 1 cilantro automático">Cama 1 cilantro automático</option>
                         <option value="Cama 2 rábano automático">Cama 2 rábano automático</option>
                         <option value="Cama 3 cilantro manual">Cama 3 cilantro manual</option>
@@ -64,6 +76,8 @@ $this->title = 'Predicción porcentaje de germinación por línea para el siguie
         const btnFiltrar = document.getElementById('btnFiltrar');
         const selectCama = document.getElementById('camaId');
         let chartInstance = null;
+        let prediccion = <?php echo json_encode($prediction); ?>;
+        console.log(prediccion);
 
         // Función para destruir el gráfico actual
         function destruirGrafico() {

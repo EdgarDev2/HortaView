@@ -165,7 +165,7 @@ AppAsset::register($this);
 
     <footer class="footer mt-auto py-3 text-muted">
         <div class="container">
-            <p class="float-start">&copy; Edgar Manuel Poot Ku <?= date('Y') ?></p>
+            <p class="float-start">&copy; Edgar Manuel Poot Ku, Jesús Antonio Santos Tejero <?= date('Y') ?></p>
             <p class="float-end">&copy; Instituto Tenológico Superior de Valladolid <?= date('Y') ?></p>
         </div>
     </footer>
